@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Query Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .input-section {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .sql-output {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .results-section {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            border-left: 4px solid #e74c3c;
+            background-color: #fadbd8;
+            margin: 10px 0;
+        }
+        .status {
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .history-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .history-content {
+            background-color: white;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 1000px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .history-close {
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .history-item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+        .history-item h3 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        .history-timestamp {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .history-query {
+            background-color: #f5f7fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .history-sql {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+        }
+        .history-results {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border-left: 4px solid #c62828;
+        }
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Augment Text to Query</h1>
+        
+        <div class="card">
+            <h2>Natural Language Query</h2>
+            <div class="input-section">
+                <textarea id="humanQuery" placeholder="Enter your query in natural language (e.g., 'Show me deals with Morgan Stanley as an advisor in the last 3 years')"></textarea>
+                <div class="button-container">
+                    <button id="generateBtn">Generate SQL</button>
+                    <button id="newQueryBtn">New Query</button>
+                    <button id="historyBtn">Query History</button>
+                </div>
+                <div id="queryStatus" class="status"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Generated SQL Query</h2>
+            <div id="sqlError" class="error" style="display: none;"></div>
+            <div id="sqlLoading" class="loading" style="display: none;">Generating SQL query...</div>
+            <div id="sqlOutput" class="sql-output"></div>
+            <div class="button-container">
+                <button id="runQueryBtn" disabled>Run Query</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Query Results</h2>
+            <div id="resultsError" class="error" style="display: none;"></div>
+            <div id="resultsLoading" class="loading" style="display: none;">Running query...</div>
+            <div id="resultsStatus" class="status"></div>
+            <div id="resultsSection" class="results-section">
+                <table id="resultsTable" style="display: none;">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- History Modal -->
+    <div id="historyModal" class="history-container">
+        <div class="history-content">
+            <span class="history-close">&times;</span>
+            <h2>Query History</h2>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const humanQueryTextarea = document.getElementById('humanQuery');
+            const generateBtn = document.getElementById('generateBtn');
+            const runQueryBtn = document.getElementById('runQueryBtn');
+            const sqlOutput = document.getElementById('sqlOutput');
+            const sqlLoading = document.getElementById('sqlLoading');
+            const sqlError = document.getElementById('sqlError');
+            const resultsLoading = document.getElementById('resultsLoading');
+            const resultsError = document.getElementById('resultsError');
+            const resultsTable = document.getElementById('resultsTable');
+            const tableHead = document.getElementById('tableHead');
+            const tableBody = document.getElementById('tableBody');
+            const queryStatus = document.getElementById('queryStatus');
+            const resultsStatus = document.getElementById('resultsStatus');
+            const newQueryBtn = document.getElementById('newQueryBtn');
+            const historyBtn = document.getElementById('historyBtn');
+            const historyModal = document.getElementById('historyModal');
+            const historyClose = document.querySelector('.history-close');
+            const historyList = document.getElementById('historyList');
+            
+            // Generate SQL from natural language query
+            generateBtn.addEventListener('click', async function() {
+                const query = humanQueryTextarea.value.trim();
+                if (!query) {
+                    sqlError.textContent = 'Please enter a query';
+                    sqlError.style.display = 'block';
+                    return;
+                }
+                
+                // Reset UI
+                sqlOutput.textContent = '';
+                sqlError.style.display = 'none';
+                sqlLoading.style.display = 'block';
+                runQueryBtn.disabled = true;
+                resultsTable.style.display = 'none';
+                resultsError.style.display = 'none';
+                queryStatus.textContent = '';
+                resultsStatus.textContent = '';
+                
+                try {
+                    const response = await fetch('/run-agent', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ query })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        sqlOutput.textContent = data.sql_query;
+                        runQueryBtn.disabled = false;
+                        queryStatus.textContent = 'SQL query generated successfully!';
+                    } else {
+                        sqlError.textContent = data.error || 'An error occurred while generating the SQL query';
+                        sqlError.style.display = 'block';
+                    }
+                } catch (error) {
+                    sqlError.textContent = 'Network error: ' + error.message;
+                    sqlError.style.display = 'block';
+                } finally {
+                    sqlLoading.style.display = 'none';
+                }
+            });
+            
+            // Run the generated SQL query
+            runQueryBtn.addEventListener('click', async function() {
+                // Reset results UI
+                resultsTable.style.display = 'none';
+                resultsError.style.display = 'none';
+                resultsLoading.style.display = 'block';
+                resultsStatus.textContent = '';
+                
+                try {
+                    const response = await fetch('/run-query', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({})
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Display results in table
+                        displayResults(data.results, data.columns);
+                        resultsStatus.textContent = `Query executed successfully. Found ${data.results.length} results.`;
+                    } else {
+                        resultsError.textContent = data.error || 'An error occurred while running the query';
+                        resultsError.style.display = 'block';
+                    }
+                } catch (error) {
+                    resultsError.textContent = 'Network error: ' + error.message;
+                    resultsError.style.display = 'block';
+                } finally {
+                    resultsLoading.style.display = 'none';
+                }
+            });
+            
+            // New Query button - save current query to history and clear
+            newQueryBtn.addEventListener('click', async function() {
+                const humanQuery = humanQueryTextarea.value.trim();
+                const sqlQueryText = sqlOutput.textContent.trim();
+                
+                if (!humanQuery && !sqlQueryText) {
+                    // Nothing to save
+                    humanQueryTextarea.value = '';
+                    sqlOutput.textContent = '';
+                    sqlError.style.display = 'none';
+                    resultsTable.style.display = 'none';
+                    resultsError.style.display = 'none';
+                    runQueryBtn.disabled = true;
+                    queryStatus.textContent = 'Started a new query.';
+                    resultsStatus.textContent = '';
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/new-query', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            human_query: humanQuery,
+                            sql_query: sqlQueryText
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Clear UI
+                        humanQueryTextarea.value = '';
+                        sqlOutput.textContent = '';
+                        sqlError.style.display = 'none';
+                        resultsTable.style.display = 'none';
+                        resultsError.style.display = 'none';
+                        runQueryBtn.disabled = true;
+                        queryStatus.textContent = 'Query saved to history. Started a new query.';
+                        resultsStatus.textContent = '';
+                    } else {
+                        alert('Error saving query: ' + (data.error || 'Unknown error'));
+                    }
+                } catch (error) {
+                    alert('Network error: ' + error.message);
+                }
+            });
+            
+            // History button - show query history
+            historyBtn.addEventListener('click', async function() {
+                historyModal.style.display = 'block';
+                await loadHistoryData();
+            });
+            
+            // Close history modal
+            historyClose.addEventListener('click', function() {
+                historyModal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === historyModal) {
+                    historyModal.style.display = 'none';
+                }
+            });
+            
+            // Function to delete a history item
+            async function deleteHistoryItem(event) {
+                try {
+                    const index = parseInt(event.target.dataset.index);
+                    console.log(`Deleting history item at index: ${index}`);
+                    
+                    // Confirm deletion
+                    if (!confirm('Are you sure you want to delete this history item?')) {
+                        return;
+                    }
+                    
+                    // Send delete request to server
+                    const response = await fetch('/delete-history-item', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ index: index })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.error) {
+                        throw new Error(result.error);
+                    }
+                    
+                    console.log('History item deleted successfully');
+                    
+                    // Refresh the entire history list to show the updated data
+                    await loadHistoryData();
+                    
+                } catch (error) {
+                    console.error('Error deleting history item:', error);
+                    alert('Error deleting history item: ' + error.message);
+                }
+            }
+            
+            // Function to load history data
+            async function loadHistoryData() {
+                try {
+                    historyList.innerHTML = '<p>Loading history...</p>';
+                    
+                    const response = await fetch('/get-history');
+                    const history = await response.json();
+                    
+                    console.log('Loaded history data:', history);
+                    
+                    // Clear the history list
+                    historyList.innerHTML = '';
+                    
+                    if (!Array.isArray(history) || history.length === 0) {
+                        historyList.innerHTML = '<p>No query history found.</p>';
+                        console.log('No history entries found');
+                    } else {
+                        console.log(`Found ${history.length} history entries`);
+                        // Display history in reverse chronological order (newest first)
+                        history.reverse().forEach((item, index) => {
+                            const historyItem = document.createElement('div');
+                            historyItem.className = 'history-item';
+                            
+                            // Format timestamp
+                            const timestamp = new Date(item.timestamp);
+                            const formattedDate = timestamp.toLocaleString();
+                            
+                            // Create the header with timestamp
+                            const headerDiv = document.createElement('div');
+                            headerDiv.className = 'history-item-header';
+                            
+                            const timestampDiv = document.createElement('div');
+                            timestampDiv.className = 'history-timestamp';
+                            timestampDiv.textContent = formattedDate;
+                            headerDiv.appendChild(timestampDiv);
+                            
+                            // Create delete button
+                            const deleteBtn = document.createElement('button');
+                            deleteBtn.className = 'delete-btn';
+                            deleteBtn.textContent = 'Delete';
+                            deleteBtn.dataset.index = history.length - 1 - index;
+                            deleteBtn.onclick = deleteHistoryItem;
+                            headerDiv.appendChild(deleteBtn);
+                            
+                            // Create content div
+                            const contentDiv = document.createElement('div');
+                            contentDiv.innerHTML = `
+                                <h3>Human Query</h3>
+                                <div class="history-query">${item.human_query}</div>
+                                <h3>SQL Query</h3>
+                                <div class="history-sql">${item.sql_query}</div>
+                            `;
+                            
+                            // Append everything to the history item
+                            historyItem.appendChild(headerDiv);
+                            historyItem.appendChild(contentDiv);
+                            
+                            // Add results if available
+                            if (item.results && item.results.length > 0) {
+                                const resultsDiv = document.createElement('div');
+                                resultsDiv.innerHTML = '<h3>Results</h3>';
+                                
+                                const resultsTable = document.createElement('table');
+                                resultsTable.className = 'history-results';
+                                
+                                // Create header row
+                                const headerRow = document.createElement('tr');
+                                Object.keys(item.results[0]).forEach(key => {
+                                    const th = document.createElement('th');
+                                    th.textContent = key;
+                                    headerRow.appendChild(th);
+                                });
+                                resultsTable.appendChild(headerRow);
+                                
+                                // Create data rows
+                                item.results.forEach(result => {
+                                    const row = document.createElement('tr');
+                                    Object.values(result).forEach(value => {
+                                        const td = document.createElement('td');
+                                        td.textContent = value !== null ? value : '';
+                                        row.appendChild(td);
+                                    });
+                                    resultsTable.appendChild(row);
+                                });
+                                
+                                resultsDiv.appendChild(resultsTable);
+                                historyItem.appendChild(resultsDiv);
+                            } else {
+                                const noResultsP = document.createElement('p');
+                                noResultsP.textContent = 'No results available';
+                                historyItem.appendChild(noResultsP);
+                            }
+                            
+                            historyList.appendChild(historyItem);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading history:', error);
+                    historyList.innerHTML = `<div class="error-message">Error loading history: ${error.message}</div>`;
+                }
+            }
+            
+            // Add event listeners to delete buttons
+            historyList.addEventListener('click', function(event) {
+                if (event.target.classList.contains('delete-btn')) {
+                    deleteHistoryItem(event);
+                }
+            });
+            
+            // Display results in a table
+            function displayResults(results, columns) {
+                if (!results || results.length === 0) {
+                    resultsStatus.textContent = 'No results found.';
+                    return;
+                }
+                
+                // Create table header
+                let headerRow = document.createElement('tr');
+                columns.forEach(column => {
+                    let th = document.createElement('th');
+                    th.textContent = column;
+                    headerRow.appendChild(th);
+                });
+                tableHead.innerHTML = '';
+                tableHead.appendChild(headerRow);
+                
+                // Create table body
+                tableBody.innerHTML = '';
+                results.forEach(row => {
+                    let tr = document.createElement('tr');
+                    columns.forEach(column => {
+                        let td = document.createElement('td');
+                        td.textContent = row[column] !== null ? row[column] : '';
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+                
+                // Show the table
+                resultsTable.style.display = 'table';
+            }
+        });
+    </script>
+</body>
+</html>

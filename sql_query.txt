@@ -1,0 +1,18 @@
+SELECT
+    ds.deal_id AS Deal_ID,
+    ds.target_name AS Target,
+    ds.date_announced AS Announcement_Date,
+    CONCAT(p.first_name, ' ', p.last_name) AS Former_CEO,
+    ph.CEO_end_date AS CEO_Replacement_Date
+
+FROM deals_summary ds INNER
+
+JOIN person_history ph ON ds.target_permid = ph.company_id INNER
+
+JOIN person p ON ph.person_permid = p.person_permid
+
+WHERE ph.position_name LIKE '%CEO%' AND ph.CEO_start_date <= ds.date_announced AND ph.CEO_end_date IS NOT NULL AND ph.CEO_end_date > ds.date_announced AND ph.CEO_end_date <= DATE_ADD(ds.date_announced, INTERVAL 12 MONTH)
+
+ORDER BY ds.date_announced DESC
+
+LIMIT 10;

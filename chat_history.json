@@ -1,0 +1,790 @@
+[
+  {
+    "timestamp": "2025-03-12T15:17:00.000000",
+    "human_query": "Show me deals with Morgan Stanley as an advisor in the last 3 years",
+    "sql_query": "SELECT\n    ds.deal_id AS deal_id,\n    ds.target_name AS target_company,\n    ds.acquiror_name AS acquirer_company,\n    ds.date_announced AS announced_date\nFROM deals_summary AS ds\nJOIN fees_verification_consolidated AS fvc\n    ON ds.deal_id = fvc.deal_id\nWHERE LOWER(fvc.name) LIKE '%morgan stanley%'\n  AND ds.date_announced >= DATE_SUB(CURDATE(), INTERVAL 3 YEAR)\nORDER BY ds.date_announced DESC\nLIMIT 10;",
+    "results": [
+      {
+        "deal_id": 4201772020,
+        "target_company": "Spirit AeroSystems Holdings Inc",
+        "acquirer_company": "Boeing Co",
+        "announced_date": "2024-07-01"
+      },
+      {
+        "deal_id": 4240168020,
+        "target_company": "Marathon Oil Corp",
+        "acquirer_company": "ConocoPhillips",
+        "announced_date": "2024-05-29"
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-03-12T15:23:50.057382",
+    "human_query": "show me the deals in which Blackstone was acquiror",
+    "sql_query": "SELECT\n    ds.deal_id,\n    ds.date_announced AS announced_date,\n    ds.acquiror_name AS acquiror,\n    ds.acquiror_parent_name AS acquiror_parent,\n    ds.acquiror_ultimate_parent_name AS acquiror_ultimate_parent,\n    ds.target_name AS target\nFROM deals_summary ds\nWHERE LOWER(ds.acquiror_name) LIKE '%blackstone%'\nORDER BY ds.date_announced DESC\nLIMIT 10;",
+    "results": [
+      {
+        "deal_id": 4219822020,
+        "announced_date": "2024-04-08",
+        "acquiror": "Blackstone Real Estate Partners X LP",
+        "acquiror_parent": "Blackstone Inc",
+        "acquiror_ultimate_parent": "Blackstone Inc",
+        "target": "Apartment Income REIT Corp"
+      },
+      {
+        "deal_id": 3016773020,
+        "announced_date": "2016-10-31",
+        "acquiror": "Blackstone Group LP",
+        "acquiror_parent": "Blackstone Group LP",
+        "acquiror_ultimate_parent": "Blackstone Group LP",
+        "target": "Team Health Holdings Inc"
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-03-12T15:59:44.388750",
+    "human_query": "show me the deals in which there are two advisors",
+    "sql_query": "SELECT\n    ds.deal_id AS deal_id,\n    ds.target_name AS target,\n    ds.acquiror_name AS acquiror,\n    ds.date_announced AS announcement_date\nFROM deals_summary ds\nJOIN fees_verification_consolidated fvc\n    ON ds.deal_id = fvc.deal_id\nGROUP BY ds.deal_id, ds.target_name, ds.acquiror_name, ds.date_announced\nHAVING COUNT(DISTINCT fvc.name) = 2\nORDER BY ds.date_announced DESC\nLIMIT 10;",
+    "results": [
+      {
+        "deal_id": 4308770020,
+        "target": "Air Transport Services Group Inc",
+        "acquiror": "Stonepeak Nile Parent LLC",
+        "announcement_date": "2024-11-04"
+      },
+      {
+        "deal_id": 4240168020,
+        "target": "Marathon Oil Corp",
+        "acquiror": "ConocoPhillips",
+        "announcement_date": "2024-05-29"
+      },
+      {
+        "deal_id": 4228373020,
+        "target": "Deciphera Pharmaceuticals Inc",
+        "acquiror": "Ono Pharmaceutical Co Ltd",
+        "announcement_date": "2024-04-29"
+      },
+      {
+        "deal_id": 4228428020,
+        "target": "Heartland Financial USA Inc",
+        "acquiror": "UMB Financial Corp",
+        "announcement_date": "2024-04-28"
+      },
+      {
+        "deal_id": 4225437020,
+        "target": "Matterport Inc",
+        "acquiror": "CoStar Group Inc",
+        "announcement_date": "2024-04-22"
+      },
+      {
+        "deal_id": 4221144020,
+        "target": "Alpine Immune Sciences Inc",
+        "acquiror": "Vertex Pharmaceuticals Inc",
+        "announcement_date": "2024-04-10"
+      },
+      {
+        "deal_id": 4219823020,
+        "target": "Model N Inc",
+        "acquiror": "Mountain Parent LLC",
+        "announcement_date": "2024-04-08"
+      },
+      {
+        "deal_id": 4186208020,
+        "target": "Inhibrx Inc",
+        "acquiror": "Aventis Inc",
+        "announcement_date": "2024-01-23"
+      },
+      {
+        "deal_id": 4185428020,
+        "target": "Kaman Corp",
+        "acquiror": "Ovation Parent Inc",
+        "announcement_date": "2024-01-19"
+      },
+      {
+        "deal_id": 4173895020,
+        "target": "ANSYS Inc",
+        "acquiror": "Synopsys Inc",
+        "announcement_date": "2024-01-16"
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-03-13T09:45:09.528404",
+    "human_query": "Show me the list of unique deals in which \"PJT\" is advisor",
+    "sql_query": "SELECT\n  ds.deal_id AS deal_identifier,\n  ds.date_announced AS announced_date,\n  ds.target_name AS target_company,\n  ds.acquiror_name AS acquiror_company,\n  fvc.type AS advisor_role,\n  fvc.name AS advisor_name\nFROM deals_summary AS ds\nJOIN fees_verification_consolidated AS fvc ON ds.deal_id = fvc.deal_id\nWHERE LOWER(fvc.name) LIKE '%pjt%'\nORDER BY ds.date_announced DESC\nLIMIT 10;",
+    "results": [
+      {
+        "deal_identifier": 4201772020,
+        "announced_date": "2024-07-01",
+        "target_company": "Spirit AeroSystems Holdings Inc",
+        "acquiror_company": "Boeing Co",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 4196458020,
+        "announced_date": "2024-02-19",
+        "target_company": "Discover Financial Services",
+        "acquiror_company": "Capital One Financial Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 4196458020,
+        "announced_date": "2024-02-19",
+        "target_company": "Discover Financial Services",
+        "acquiror_company": "Capital One Financial Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 4164570020,
+        "announced_date": "2023-12-03",
+        "target_company": "Hawaiian Holdings Inc",
+        "acquiror_company": "Alaska Air Group Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 4130226020,
+        "announced_date": "2023-09-11",
+        "target_company": "Avantax Inc",
+        "acquiror_company": "Aretec Group Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 4130226020,
+        "announced_date": "2023-09-11",
+        "target_company": "Avantax Inc",
+        "acquiror_company": "Aretec Group Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 4130226020,
+        "announced_date": "2023-09-11",
+        "target_company": "Avantax Inc",
+        "acquiror_company": "Aretec Group Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 4110680020,
+        "announced_date": "2023-07-24",
+        "target_company": "Sculptor Capital Management Inc",
+        "acquiror_company": "Rithm Capital Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 4110680020,
+        "announced_date": "2023-07-24",
+        "target_company": "Sculptor Capital Management Inc",
+        "acquiror_company": "Rithm Capital Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 4110680020,
+        "announced_date": "2023-07-24",
+        "target_company": "Sculptor Capital Management Inc",
+        "acquiror_company": "Rithm Capital Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 4110680020,
+        "announced_date": "2023-07-24",
+        "target_company": "Sculptor Capital Management Inc",
+        "acquiror_company": "Rithm Capital Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3986692020,
+        "announced_date": "2023-07-13",
+        "target_company": "Denbury Inc",
+        "acquiror_company": "Exxon Mobil Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3986692020,
+        "announced_date": "2023-07-13",
+        "target_company": "Denbury Inc",
+        "acquiror_company": "Exxon Mobil Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 4082202020,
+        "announced_date": "2023-05-22",
+        "target_company": "PDC Energy Inc",
+        "acquiror_company": "Chevron Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 4051264020,
+        "announced_date": "2023-03-13",
+        "target_company": "Provention Bio Inc",
+        "acquiror_company": "Sanofi SA",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 4006677020,
+        "announced_date": "2022-11-29",
+        "target_company": "Horizon Therapeutics PLC",
+        "acquiror_company": "Pillartree Ltd",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3957825020,
+        "announced_date": "2022-08-04",
+        "target_company": "ChemoCentryx Inc",
+        "acquiror_company": "Amgen Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3919111020,
+        "announced_date": "2022-05-11",
+        "target_company": "Redbox Entertainment Inc",
+        "acquiror_company": "Chicken Soup for the Soul Entertainment Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3917579020,
+        "announced_date": "2022-05-09",
+        "target_company": "Hemisphere Media Group Inc",
+        "acquiror_company": "Gato Investments LP",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3917579020,
+        "announced_date": "2022-05-09",
+        "target_company": "Hemisphere Media Group Inc",
+        "acquiror_company": "Gato Investments LP",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3917579020,
+        "announced_date": "2022-05-09",
+        "target_company": "Hemisphere Media Group Inc",
+        "acquiror_company": "Gato Investments LP",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3917579020,
+        "announced_date": "2022-05-09",
+        "target_company": "Hemisphere Media Group Inc",
+        "acquiror_company": "Gato Investments LP",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3917579020,
+        "announced_date": "2022-05-09",
+        "target_company": "Hemisphere Media Group Inc",
+        "acquiror_company": "Gato Investments LP",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3902102020,
+        "announced_date": "2022-04-13",
+        "target_company": "Sierra Oncology Inc",
+        "acquiror_company": "GlaxoSmithKline PLC",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3898058020,
+        "announced_date": "2022-04-01",
+        "target_company": "Manning & Napier Inc",
+        "acquiror_company": "Callodine Group LLC",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3898058020,
+        "announced_date": "2022-04-01",
+        "target_company": "Manning & Napier Inc",
+        "acquiror_company": "Callodine Group LLC",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3898058020,
+        "announced_date": "2022-04-01",
+        "target_company": "Manning & Napier Inc",
+        "acquiror_company": "Callodine Group LLC",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3890790020,
+        "announced_date": "2022-03-20",
+        "target_company": "Nielsen Holdings Plc",
+        "acquiror_company": "Nielsen Holdings plc SPV",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3824569040,
+        "announced_date": "2021-11-08",
+        "target_company": "Inmarsat PLC",
+        "acquiror_company": "Viasat Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3824569040,
+        "announced_date": "2021-11-08",
+        "target_company": "Inmarsat PLC",
+        "acquiror_company": "Viasat Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3824569040,
+        "announced_date": "2021-11-08",
+        "target_company": "Inmarsat PLC",
+        "acquiror_company": "Viasat Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3748909020,
+        "announced_date": "2021-06-02",
+        "target_company": "Constellation Pharmaceuticals Inc",
+        "acquiror_company": "MorphoSys AG",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3732503040,
+        "announced_date": "2021-04-25",
+        "target_company": "SGHC Ltd",
+        "acquiror_company": "Sports Entertainment Acquisition Corp",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3723627020,
+        "announced_date": "2021-04-08",
+        "target_company": "ORBCOMM Inc",
+        "acquiror_company": "GI Manager LP",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3723627020,
+        "announced_date": "2021-04-08",
+        "target_company": "ORBCOMM Inc",
+        "acquiror_company": "GI Manager LP",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3723627020,
+        "announced_date": "2021-04-08",
+        "target_company": "ORBCOMM Inc",
+        "acquiror_company": "GI Manager LP",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3718302020,
+        "announced_date": "2021-03-26",
+        "target_company": "MSG Networks Inc",
+        "acquiror_company": "Madison Square Garden Entertainment Corp",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3708744020,
+        "announced_date": "2021-03-10",
+        "target_company": "Diamond Resorts International Inc",
+        "acquiror_company": "Hilton Grand Vacations Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3649600020,
+        "announced_date": "2020-10-19",
+        "target_company": "BioSpecifics Technologies Corp",
+        "acquiror_company": "Endo International PLC",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3617605020,
+        "announced_date": "2020-05-13",
+        "target_company": "Intelsat SA",
+        "acquiror_company": "Creditors",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3617605020,
+        "announced_date": "2020-05-13",
+        "target_company": "Intelsat SA",
+        "acquiror_company": "Creditors",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3515414020,
+        "announced_date": "2020-02-18",
+        "target_company": "Legg Mason Inc",
+        "acquiror_company": "Franklin Resources Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3515414020,
+        "announced_date": "2020-02-18",
+        "target_company": "Legg Mason Inc",
+        "acquiror_company": "Franklin Resources Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3515414020,
+        "announced_date": "2020-02-18",
+        "target_company": "Legg Mason Inc",
+        "acquiror_company": "Franklin Resources Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3508665020,
+        "announced_date": "2020-01-30",
+        "target_company": "Navistar International Corp",
+        "acquiror_company": "Traton SE",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3508665020,
+        "announced_date": "2020-01-30",
+        "target_company": "Navistar International Corp",
+        "acquiror_company": "Traton SE",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3508665020,
+        "announced_date": "2020-01-30",
+        "target_company": "Navistar International Corp",
+        "acquiror_company": "Traton SE",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3490457020,
+        "announced_date": "2019-12-09",
+        "target_company": "AerSale Corp",
+        "acquiror_company": "Monocle Acquisition Corp",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3479721020,
+        "announced_date": "2019-11-25",
+        "target_company": "TD Ameritrade Holding Corp",
+        "acquiror_company": "Charles Schwab Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3479721020,
+        "announced_date": "2019-11-25",
+        "target_company": "TD Ameritrade Holding Corp",
+        "acquiror_company": "Charles Schwab Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3479721020,
+        "announced_date": "2019-11-25",
+        "target_company": "TD Ameritrade Holding Corp",
+        "acquiror_company": "Charles Schwab Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3453108020,
+        "announced_date": "2019-09-16",
+        "target_company": "Alder BioPharmaceuticals Inc",
+        "acquiror_company": "Lundbeck LLC",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3434950020,
+        "announced_date": "2019-07-29",
+        "target_company": "Upjohn Inc",
+        "acquiror_company": "Mylan NV",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3420434020,
+        "announced_date": "2019-06-25",
+        "target_company": "Allergan PLC",
+        "acquiror_company": "AbbVie Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3365110020,
+        "announced_date": "2019-06-24",
+        "target_company": "Caesars Entertainment Corp",
+        "acquiror_company": "Eldorado Resorts Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3365110020,
+        "announced_date": "2019-06-24",
+        "target_company": "Caesars Entertainment Corp",
+        "acquiror_company": "Eldorado Resorts Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3365110020,
+        "announced_date": "2019-06-24",
+        "target_company": "Caesars Entertainment Corp",
+        "acquiror_company": "Eldorado Resorts Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3365110020,
+        "announced_date": "2019-06-24",
+        "target_company": "Caesars Entertainment Corp",
+        "acquiror_company": "Eldorado Resorts Inc",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3342886020,
+        "announced_date": "2019-02-04",
+        "target_company": "Liberty Expedia Holdings Inc",
+        "acquiror_company": "Expedia Group Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3110526020,
+        "announced_date": "2018-12-03",
+        "target_company": "Tesaro Inc",
+        "acquiror_company": "GlaxoSmithKline PLC",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3300139020,
+        "announced_date": "2018-10-18",
+        "target_company": "Endocyte Inc",
+        "acquiror_company": "Novartis AG",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3237450020,
+        "announced_date": "2018-05-21",
+        "target_company": "General Electric Co-Transportation Business",
+        "acquiror_company": "Westinghouse Air Brake Technologies Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3239609020,
+        "announced_date": "2018-04-29",
+        "target_company": "Sprint Corp",
+        "acquiror_company": "T-Mobile US Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3239609020,
+        "announced_date": "2018-04-29",
+        "target_company": "Sprint Corp",
+        "acquiror_company": "T-Mobile US Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3239609020,
+        "announced_date": "2018-04-29",
+        "target_company": "Sprint Corp",
+        "acquiror_company": "T-Mobile US Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3212896020,
+        "announced_date": "2018-02-13",
+        "target_company": "Nationstar Mortgage Holdings Inc",
+        "acquiror_company": "Wmih Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3104534020,
+        "announced_date": "2017-10-30",
+        "target_company": "Dynegy Inc",
+        "acquiror_company": "Vistra Energy Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3104534020,
+        "announced_date": "2017-10-30",
+        "target_company": "Dynegy Inc",
+        "acquiror_company": "Vistra Energy Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3104534020,
+        "announced_date": "2017-10-30",
+        "target_company": "Dynegy Inc",
+        "acquiror_company": "Vistra Energy Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3104534020,
+        "announced_date": "2017-10-30",
+        "target_company": "Dynegy Inc",
+        "acquiror_company": "Vistra Energy Corp",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners Inc"
+      },
+      {
+        "deal_identifier": 3071808020,
+        "announced_date": "2017-02-24",
+        "target_company": "DigitalGlobe Inc",
+        "acquiror_company": "MacDonald Dettwiler & Associates Ltd",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3071808020,
+        "announced_date": "2017-02-24",
+        "target_company": "DigitalGlobe Inc",
+        "acquiror_company": "MacDonald Dettwiler & Associates Ltd",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3071808020,
+        "announced_date": "2017-02-24",
+        "target_company": "DigitalGlobe Inc",
+        "acquiror_company": "MacDonald Dettwiler & Associates Ltd",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3071808020,
+        "announced_date": "2017-02-24",
+        "target_company": "DigitalGlobe Inc",
+        "acquiror_company": "MacDonald Dettwiler & Associates Ltd",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3063451020,
+        "announced_date": "2017-01-24",
+        "target_company": "Multi Packaging Solutions International Ltd",
+        "acquiror_company": "WestRock Co",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3050772020,
+        "announced_date": "2016-12-06",
+        "target_company": "Ultra Petroleum Corp",
+        "acquiror_company": "Creditors",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3050772020,
+        "announced_date": "2016-12-06",
+        "target_company": "Ultra Petroleum Corp",
+        "acquiror_company": "Creditors",
+        "advisor_role": "target",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 3044877020,
+        "announced_date": "2016-12-06",
+        "target_company": "IntraLinks Holdings Inc",
+        "acquiror_company": "Synchronoss Technologies Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 2989815020,
+        "announced_date": "2016-08-01",
+        "target_company": "Fleetmatics Group PLC",
+        "acquiror_company": "Verizon Business International Holdings BV",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 2808152020,
+        "announced_date": "2016-06-30",
+        "target_company": "Starz",
+        "acquiror_company": "Lions Gate Entertainment Corp",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 2808152020,
+        "announced_date": "2016-06-30",
+        "target_company": "Starz",
+        "acquiror_company": "Lions Gate Entertainment Corp",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 2808152020,
+        "announced_date": "2016-06-30",
+        "target_company": "Starz",
+        "acquiror_company": "Lions Gate Entertainment Corp",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 2951486020,
+        "announced_date": "2016-04-28",
+        "target_company": "DreamWorks Animation SKG Inc",
+        "acquiror_company": "NBCUniversal Media LLC",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      },
+      {
+        "deal_identifier": 2949153020,
+        "announced_date": "2016-04-20",
+        "target_company": "Hansen Medical Inc",
+        "acquiror_company": "Auris Surgical Robotics Inc",
+        "advisor_role": "acquiror",
+        "advisor_name": "PJT Partners LP"
+      }
+    ]
+  }
+]

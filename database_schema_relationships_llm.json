@@ -1,0 +1,642 @@
+{
+  "company": {
+    "permid": {
+      "description": "unique identifier assigned to each company, ensuring distinct identification.",
+      "relationships": [
+        "deals_summary.target_permid",
+        "deals_summary.target_parent_permid",
+        "deals_summary.target_ultimate_parent_permid",
+        "deals_summary.acquiror_permid",
+        "deals_summary.acquiror_parent_permid",
+        "deals_summary.acquiror_ultimate_parent_permid",
+        "person_roles.company_id",
+        "person_history.company_id"
+      ]
+    },
+    "company_id": {
+      "description": "unique identifier assigned to each company, ensuring distinct identification for data management and retrieval."
+    },
+    "name": {
+      "description": "name of the company"
+    },
+    "country_headquarters": {
+      "values": "United States of America, Switzerland, Marshall Islands, India, France, Belgium, United Kingdom, Saudi Arabia, Bermuda, China, Japan, Italy, Ireland; Republic of, Canada, Sweden, United Arab Emirates, Luxembourg, Cayman Islands, Singapore, Czech Republic, Denmark, Germany, Australia, Israel, Netherlands, Russia, South Africa, Finland, Spain, Mexico, Taiwan, Hong Kong, Korea; Republic (S. Korea), Virgin Islands; British, Thailand, Guernsey, Norway, Monaco, Jersey, Brazil, Mauritius, Virgin Islands; United States, Greece, Uruguay, Kuwait, Indonesia, Austria, Turkey, Qatar, Poland, Chile, New Zealand, Malaysia, Vietnam, Argentina, Colombia, Philippines, Peru, Morocco, Portugal, Kazakhstan, Hungary, Macau",
+      "description": "country where a company's main office is located."
+    },
+    "gics_sector": {
+      "values": "Consumer Discretionary, Materials, Consumer Staples, Information Technology, Utilities, Industrials, Energy, Health Care, Financials, Communication Services, Real Estate",
+      "description": "categorizes companies based on the Global Industry Classification Standard (GICS) into sectors, reflecting their primary business activities."
+    },
+    "gics_industry": {
+      "values": "Aerospace & Defense, Air Freight & Logistics, Automobile Components, Automobiles, Banks, Beverages, Biotechnology, Broadline Retail, Building Products, Capital Markets, Chemicals, Commercial Services & Supplies, Communications Equipment, Construction & Engineering, Construction Materials, Consumer Finance, Consumer Staples Distribution & Retail, Containers & Packaging, Distributors, Diversified Consumer Services, Diversified REITs, Diversified Telecommunication Services, Electric Utilities, Electrical Equipment, Electronic Equipment, Instruments & Components, Energy Equipment & Services, Entertainment, Financial Services, Food Products, Gas Utilities, Ground Transportation, Health Care Equipment & Supplies, Health Care Providers & Services, Health Care REITs, Health Care Technology, Hotel & Resort REITs, Hotels, Restaurants & Leisure, Household Durables, Household Products, IT Services, Independent Power and Renewable Electricity Producers, Industrial Conglomerates, Industrial REITs, Insurance, Interactive Media & Services, Leisure Products, Life Sciences Tools & Services, Machinery, Marine Transportation, Media, Metals & Mining, Mortgage Real Estate Investment Trusts (REITs), Multi-Utilities, Office REITs, Oil, Gas & Consumable Fuels, Paper & Forest Products, Passenger Airlines, Personal Care Products, Pharmaceuticals, Professional Services, Real Estate Management & Development, Residential REITs, Retail REITs, Semiconductors & Semiconductor Equipment, Software, Specialized REITs, Specialty Retail, Technology Hardware, Storage & Peripherals, Textiles, Apparel & Luxury Goods, Tobacco, Trading Companies & Distributors, Transportation Infrastructure, Water Utilities, Wireless Telecommunication Services",
+      "description": "specific industry classification of a company according to the Global Industry Classification Standard (GICS)."
+    },
+    "parent_id": {
+      "description": "unique identifier assigned to the parent company of the entity",
+      "relationships": [
+        "deals_summary.target_parent_permid",
+        "deals_summary.acquiror_parent_permid"
+      ]
+    },
+    "parent_name": {
+      "description": "name of the ultimate parent company of the acquiror"
+    },
+    "ultimate_parent_id": {
+      "description": "unique identifier assigned to the ultimate parent company of the entity",
+      "relationships": [
+        "deals_summary.target_ultimate_parent_permid",
+        "deals_summary.acquiror_ultimate_parent_permid"
+      ]
+    },
+    "ultimate_parent_name": {
+      "description": "name of the ultimate parent company of the acquiror"
+    }
+  },
+  "fees_verification_consolidated": {
+    "deal_id": {
+      "description": "unique identifier assigned to each deal, facilitating tracking and management of specific deals.",
+      "relationships": [
+        "deals_summary.deal_id"
+      ]
+    },
+    "type": {
+      "values": "acquiror, target",
+      "description": "categorizes who the advisor represented: target or acquiror"
+    },
+    "name": {
+      "description": "the name of the advisory firm",
+      "relationships": [
+        "advisor.advisor_name"
+      ]
+    },
+    "advisor_fee_role": {
+      "values": "Advisory, Opinion, Total Paid, Contingency, Advice/Opinion, Advisory Opinion, Bustup, Retainer, Financing, Initiation",
+      "description": "categorizes the roles for fees paid"
+    },
+    "advisor_fee": {
+      "description": "monetary amount charged by an advisor for their services associated with a deal"
+    },
+    "fee_context": {
+      "description": "summary of the advisors role"
+    },
+    "fee_relative": {
+      "values": "Fixed, Deal Value",
+      "description": "indicates whether the fee was fixed or calculated based on deal value"
+    },
+    "verification": {
+      "values": "Verified, Not Verified",
+      "description": "indicates if the data was verified by documents"
+    }
+  },
+  "deal_history_consolidated": {
+    "deal_id": {
+      "description": "unique identifier assigned to each deal, facilitating tracking and management of specific deals.",
+      "relationships": [
+        "deals_summary.deal_id"
+      ]
+    },
+    "name": {
+      "description": "the name of the advisory firm",
+      "relationships": [
+        "advisor.advisor_name"
+      ]
+    },
+    "type": {
+      "values": "acquiror, target",
+      "description": "categorizes who the advisor represented: target or acquiror"
+    },
+    "hiring_date_adjusted": {
+      "description": "specific date when the advisor was hired"
+    },
+    "initial_meeting_date_adjusted": {
+      "description": "specific date of the first meeting between target and acquiror"
+    },
+    "first_mention_date_adjusted": {
+      "description": "specific date when the advisor was first mentioned in the transaction"
+    },
+    "selection_process": {
+      "values": "Prior Relationship, Bake-off",
+      "description": "indicates whether the advisor hiring selection process was a competitive process or a prior relationship"
+    },
+    "engagement_context": {
+      "description": "the context in which the advisor was engaged"
+    },
+    "engagement_role": {
+      "values": "Special Committee, Company, Not Found",
+      "description": "indicates the whether the advisor represented a Special Committee or the Company"
+    },
+    "verification": {
+      "values": "Verified, Not Found",
+      "description": "indicates if the data was verified by documents"
+    }
+  },
+  "advisor_role": {
+    "advisor_role_name": {
+      "values": "Dealer Manager Fee, Advisory, Opinion, Contingency, Bustup, Financing, Represented Seller, Advice/Opinion, Initiation, Retainer, Holder Advisor, Total Paid",
+      "description": "categorizes the various roles that an advisor provided on the transaction"
+    }
+  },
+  "advisor": {
+    "advisor_id": {
+      "description": "uniquely identifies each advisor.",
+      "relationships": [
+        "advisor_fees.advisor_id"
+      ]
+    },
+    "advisor_name": {
+      "value":"Morgan Stanley, Bank of America, J.P. Morgan, Goldman Sachs, Citigroup, UBS, Deutsche Bank, Royal Bank of Canada, Wells Fargo, Barclays, PJT Partners, Moelis, Lazard, Houlihan Lokey, Evercore, Perella Weinberg, Centerview, Stifel, Rothschild, TD (Cowen) , Piper Sandler, Jefferies, Other",
+      "description": "the name of the advisory firm",
+      "relationships": [
+        "fees_verification_consolidated.name",
+        "deal_history_consolidated.name"
+      ]
+    },
+    "advisor_parent_id": {
+      "description": "unique identifier of the parent to the advisory firm"
+    },
+    "advisor_parent_name": {
+      "description": "the parent of the advisory firm"
+    },
+    "advisor_category": {
+      "values": "Bulge Bracket, Independent, Other",
+      "description": "categorizes financial advisors into distinct groups based on large bulge bracket firms or smaller independent firms"
+    },
+    "advisor_tier": {
+      "values": "Tier 1, Not Tier 1",
+      "description": "indicates the classification level of an advisor, distinguishing between Tier 1 and others."
+    }
+  },
+  "advisor_fees": {
+    "advisor_fees_id": {
+      "description": "unique identifier for the fees associated for the advisor",
+      "relationships": [
+        "fees_verification_consolidated.advisor_fees_id"
+      ]
+    },
+    "deal_id": {
+      "description": "unique identifier assigned to each deal, facilitating tracking and management of specific deals.",
+      "relationships": [
+        "deals_summary.deal_id"
+      ]
+    },
+    "type": {
+      "values": "target, acquiror",
+      "description": "categorizes who the advisor represented: target or acquiror"
+    },
+    "advisor_id": {
+      "description": "uniquely identifies each advisor.",
+      "relationships": [
+        "advisor.advisor_id"
+      ]
+    },
+    "advisor_fee": {
+      "description": "monetary amount charged by an advisor for their services associated with a deal"
+    }
+  },
+  "person_roles": {
+    "person_permid": {
+      "description": "uniquely identifies individuals.",
+      "relationships": ["person_roles.person_permid", "person_history.person_permid"]
+    },
+    "company_id": {
+      "description": "unique identifier for the company associated with each person's role.",
+      "relationships": [
+        "company.permid"
+      ]
+    },
+    "position_name": {
+      "values": "CFO, President, CEO, Chairman, Director, COO",
+      "description": "titles or roles held by individuals, indicating their level of responsibility and authority."
+    },
+    "position_start_date": {
+      "description": "date on which an individual began their role or position."
+    },
+    "position_end_date": {
+      "description": "date on which an individual's role or position officially concludes."
+    }
+  },
+  "person_history": {
+    "person_permid": {
+      "description": "unique identifier assigned to each individual",
+      "relationships": ["person_roles.person_permid", "person.person_permid"]
+    },
+    "company_id": {
+      "description": "unique identifier for the companies associated with individuals.",
+      "relationships": [
+        "company.permid"
+      ]
+    },
+    "position_start_date": {
+      "description": "date on which a Director began their role on the Board of Directors."
+    },
+    "position_end_date": {
+      "description": "date on which a Director ended their role on the Board of Directors."
+    },
+    "position_name": {
+      "values": "CFO, President, CEO, Chairman, Director, COO",
+      "description": "title or designation of a person's role."
+    },
+    "CEO_start_date": {
+      "description": "date on which a CEO began their role as Chief Executive Officer."
+    },
+    "CEO_end_date": {
+      "description": "date on which a CEO ended their role as Chief Executive Officer."
+    },
+    "CFO_start_date": {
+      "description": "date on which a CFO began their role as Chief Financial Officer."
+    },
+    "CFO_end_date": {
+      "description": "date on which a CFO ended their role as Chief Financial Officer."
+    },
+    "president_start_date": {
+      "description": "date on which a company President began their role."
+    },
+    "president_end_date": {
+      "description": "date on which a company President ended their role."
+    }
+  },
+  "person": {
+    "person_permid": {
+      "description": "unique identifier assigned to each individual.",
+      "relationships": ["person_roles.person_permid", "person_history.person_permid"]
+    },
+    "full_name": {
+      "description": "first name, middle name, last name, and prefix"
+    },
+    "first_name": {
+      "description": "first name of individual"
+    },
+    "last_name": {
+      "description": "last name of individual"
+    },
+    "gender": {
+      "description": "gender of individual",
+      "values": "Male, Female"
+    }
+  },
+  "deals_summary": {
+    "deal_id": {
+      "description": "unique identifier assigned to each deal, allowing for distinct tracking and management.",
+      "relationships": [
+        "advisor_fees.deal_id",
+        "deals_details.deal_id",
+        "fees_verification_consolidated.deal_id",
+        "deal_history_consolidated.deal_id"
+      ]
+    },
+    "status": {
+      "values": "Completed, Pending",
+      "description": "indicates the current state of a deal, with possible values of Completed or Pending.",
+      "relationships": ["deal_sheet.code.mnastatus"]
+    },
+    "date_announced": {
+      "description": "date the deal was publicly announced.",
+      "relationships": ["deal_sheet.code.mnaanndate"]
+    },
+    "date_effective": {
+      "description": "date the transaction closed",
+      "relationships": ["deal_sheet.code.mnaeffectivedate"]
+    },
+    "target_permid": {
+      "description": "unique identifier associated with the target entity",
+      "relationships": ["company.permid"]
+    },
+    "target_name": {
+      "description": "name of the target entity of the transaction",
+      "relationships": ["company.name"]
+    },
+    "target_parent_permid": {
+      "description": "unique identifier for the parent company of the target",
+      "relationships": ["company.parent_id"]
+    },
+    "target_parent_name": {
+      "description": "name of the parent company of the target",
+      "relationships": ["company.name"]
+    },
+    "target_ultimate_parent_permid": {
+      "description": "unique identifier for the ultimate parent company of the target",
+      "relationships": ["company.ultimate_parent_id"]
+    },
+    "target_ultimate_parent_name": {
+      "description": "name of the ultimate parent company of the target entity",
+      "relationships": ["company.name"]
+    },
+    "acquiror_permid": {
+      "description": "unique identifier assigned to the acquiring entity.",
+      "relationships": ["company.permid"]
+    },
+    "acquiror_name": {
+      "description": "name of the acquiring entity of the transaction",
+      "relationships": ["company.name"]
+    },
+    "acquiror_parent_permid": {
+      "description": "unique identifier assigned to the parent company of the acquiror",
+      "relationships": ["company.parent_id"]
+    },
+    "acquiror_parent_name": {
+      "description": "name of the parent company of the acquiror",
+      "relationships": ["company.name"]
+    },
+    "acquiror_ultimate_parent_permid": {
+      "description": "unique identifier for the ultimate parent company of the acquiror",
+      "relationships": ["company.ultimate_parent_permid"]
+    },
+    "acquiror_ultimate_parent_name": {
+      "description": "name of the ultimate parent company of the acquiring entity",
+      "relationships": ["company.name"]
+    },
+    "rank_value": {
+      "description": "enterprise value or total value of the deal",
+      "relationships": ["deal_sheet.code.mnarankvalueincnetdebt"]
+    },
+    "form": {
+      "values": "Merger, Acquisition Of Majority Interest, Acquisition Of Assets, Acquisition Of Remaining Interest",
+      "description": "categorizes the type of transaction, indicating whether it is a merger, an acquisition of majority interest, an acquisition of assets, or an acquisition of remaining interest."
+    }
+  },
+  "deals_details": {
+    "deal_id": {
+      "description": "unique identifier assigned to each deal, allowing for distinct tracking and management.",
+      "relationships": [
+        "deals_summary.deal_id"
+      ]
+    },
+    "name": {
+      "description": "Refinitiv TR Code",
+      "relationships": [
+        "deal_sheet.code",
+        "refinitiv_fields.trcode"
+      ]
+    },
+    "value": {
+      "description": "value from Refinitiv database"
+    }
+  },
+  "deal_sheet": {
+    "code": {
+      "description": "Refinitiv TR code",
+      "values": [
+          "mnaanndate",
+          "mnaeffectivedate",
+          "mnaattitude",
+          "mnastatus",
+          "mnarankvalueincnetdebt",
+          "mnatargettotalfees",
+          "mnataradvisorfeestodealvaluepct",
+          "mnaacquirortotalfees",
+          "mnaacqadvisorfeestodealvaluepct",
+          "mnaacquirorterminationfee",
+          "mnatargetterminationfee",
+          "mnapctheldatanndate",
+          "mnapctofsharessought",
+          "mnapctofsharesacquired",
+          "mnapremiumoffered1daypriorann",
+          "mnapremiumoffered1weekpriorann",
+          "mnapremiumoffered4weekpriorann",
+          "mnaconsiderationstructure",
+          "mnafinalconsiderationstructure",
+          "mnapercentcash",
+          "mnapercentofpaymentinstock",
+          "mnahassplcmte",
+          "mnahascollar",
+          "mnahasbridgefinancing",
+          "mnaacquisitiontechnique",
+          "mnatarget",
+          "mnatargetnation",
+          "mnatargetultparent",
+          "mnatargetultparentnation",
+          "mnaacquiror",
+          "mnaacquirornation",
+          "mnaacquirorultparent",
+          "mnaacquirorultparentnation",
+          "mnafinsponsor",
+          "mnafinsponrole",
+          "mnaportcomp",
+          "mnaportcorole",
+          "mnaswf",
+          "mnaswfrole",
+          "mnatargetstockonann",
+          "mnatargetstockprice1daypriortoann",
+          "mnatargetstockprice1weekpriortoann",
+          "mnatargetstockprice1daypostann",
+          "mnaacquirorstockpriceonann",
+          "mnaacquirorstockprice1daypriortoann",
+          "mnaacquirorstockprice1weekpriortoann",
+          "mnaacquirorstockprice1daypostann",
+          "mnaexpsynergiesaftertaxes",
+          "mnaexpaccretivedilutivetype",
+          "mnaiscrossborder",
+          "mnahasbankruptcy"          
+        ],
+      "relationships": [
+          "deal_details.name",
+          "refinitiv_fields.trcode"
+        ]
+    },
+    "field_name": {
+      "values": {
+          "Deal Synopsis": {
+            "description": "Summary of the deal in a sentence"
+          },
+          "Date Announced": {
+            "description": "Date the deal was announced",
+            "relationships": ["deals_summary.date_announced"]
+          },
+          "Date Effective": {
+            "description": "Date the deal was closed",
+            "relationships": ["deals_summary.date_effective"]
+          },
+          "Deal Attitude": {
+            "Description": "Code for the attitude or recommendation of the target company’s management or board toward the transaction.",
+            "values": "F=Friendly; H=Hostile; N=Neutral; X=Not Applicable; U=Unsolicited"
+          },
+          "Deal Status": {
+            "Description": "Most recent status of the transaction.",
+            "values": "C=Completed, I=Intended, L=Pending Due to Regulatory Reasons, NA= Status Unknown, P=Pending, PC=Partially Completed, S=Seeking Buyer, R=Rumor, DR=Discontinued Rumor, U=Unconditional, W=Withdrawn, SW=Seeking Buyer Withdrawn",
+            "relationships": ["deals_summary.status"]
+          },
+          "Rank Value inc. Net Debt of Target ($M)": {
+            "Description": "Deal value, which includes net debt, of the transaction.",
+            "unit": "millions",
+            "relationships": ["deals_summary.rank_value"]
+          },
+          "Total Target Fees ($M)": {
+            "Description": "Fees paid by the target to its financial advisors upon completion of the transaction",
+            "unit": "millions"
+          },
+          "Total Target Fees %": {
+            "Description": "Disclosed fees paid by the target to its advisors, expressed as a percentage of the Deal Value."
+          },
+          "Total Acquiror Fees ($M)": {
+            "Description": "Fees paid by the acquiror to its advisors upon deal completion, expressed in millions (excludes financing fees).",
+            "unit": "millions"
+          },
+          "Total Acquiror Fees %": {
+            "Description": "Disclosed fees paid by the acquiror to its advisors, expressed as a percentage of the Deal Value."
+          },
+          "Acquiror termination fees ($M)": {
+            "Description": "The termination fee amount that the acquiror is obligated to pay.",
+            "unit": "millions"
+          },
+          "Target termination fees ($M)": {
+            "Description": "The termination fee amount that the target is obligated to pay.",
+            "unit": "millions"
+          },
+          "% Held": {
+            "Description": "Percentage of shares held by the acquiror at announcement."
+          },
+          "% Sought": {
+            "Description": "Percentage of shares the acquiror is seeking to purchase."
+          },
+          "% Acquired": {
+            "Description": "Percentage of shares acquired by the acquiror in the transaction."
+          },
+          "Premium, Pre Bid 1 Day (%)": {
+            "Description": "Percentage premium of the offer price over the target closing stock price one day before announcement."
+          },
+          "Premium, Pre Bid 1 Week (%)": {
+            "Description": "Percentage premium of the offer price over the target closing stock price one week before announcement."
+          },
+          "Premium, Pre Bid 4 Weeks (%)": {
+            "Description": "Percentage premium of the offer price over the targets closing stock price 4 weeks before announcement."
+          },
+          "Consideration Structure": {
+            "Description": "Type of consideration offered by the acquiror in its initial offer for the target.",
+            "values": "Cash Only, Stock Only, Hybrid, Other"
+          },
+          "Final Consideration Structure": {
+            "Description": "Type of consideration offered by the acquiror in its final offer for the target.",
+            "values": "Cash Only, Stock Only, Hybrid, Other"
+          },
+          "% Cash": {
+            "Description": "Percentage of Cash: the portion of the total value paid in cash."
+          },
+          "% Stock": {
+            "Description": "Percentage of Stock: the portion of the total value paid in stock."
+          },
+          "Special Committee": {
+            "Description": "Set to Y if a special Board committee was convened in the deal.",
+            "values": "Y, N"
+          },
+          "Collar Flag": {
+            "Description": "Collar was present for a stock swap consideration.",
+            "values": "Y, N"
+          },
+          "Financing via Bridge Loans Flag": {
+            "Description": "Transaction was financed by a bridge loan.",
+            "values": "Y, N"
+          },
+          "Acquisition Technique": {
+            "Description": "Method by which acquiror pursued transaction."
+          },
+          "Target Full Name": {
+            "Description": "Full name of target company.",
+            "relationships": ["deals_summary.target_name"]
+          },
+          "Target Primary Nation": {
+            "Description": "HQ country of target company"
+          },
+          "Target Ultimate Parent Full Name": {
+            "Description": "Name of the target ultimate parent.",
+            "relationships": ["deals_summary.ultimate_parent_name"]
+          },
+          "Target Ultimate Parent Primary Nation Region": {
+            "Description": "HQ country of target ultimate parent company."
+          },
+          "Acquiror Full Name": {
+            "Description": "Full name of acquiror company.",
+            "relationships": ["deals_summary.acquiror_name"]
+          },
+          "Acquiror Primary Nation": {
+            "Description": "HQ country of target company"
+          },
+          "Acquiror Ultimate Parent Full Name": {
+            "Description": "Name of the acquiror ultimate parent.",
+            "relationships": ["deals_summary.acquiror_ultimate_parent_name"]
+          },
+          "Acquiror Ultimate Parent Primary Nation": {
+            "Description": "HQ country of acquiror ultimate parent company."
+          },
+          "Financial Sponsor Name": {
+            "Description": "Related party to the transaction: name of financial sponsor."
+          },
+          "Financial Sponsor Role": {
+            "Description": "Related party to the transaction: role of financial sponsor."
+          },
+          "Portfolio Company": {
+            "Description": "Related party to the transaction: name of portfolio company, typically of the financial sponsor."
+          },
+          "Portfolio Company Role": {
+            "Description": "Related party to the transaction: role of portfolio company."
+          },
+          "Sovereign Wealth Fund Name": {
+            "Description": "Related party to the transaction: name of soverign wealth fund."
+          },
+          "Sovereign Wealth Fund Role": {
+            "Description": "Related party to the transaction: role of soverign wealth fund."
+          },
+          "Target Stock Price on Announcement Day": {
+            "Description": "Closing stock price of the target stock price on the announcement date."
+          },
+          "Target Stock Price 1 Day Prior to Announcement": {
+            "Description": "Closing price of the target stock price 1 day before the announcement date."
+          },
+          "Target Stock Price 1 Week Prior to Announcement": {
+            "Description": "Closing price of the target stock price 1 week before the announcement date."
+          },
+          "Target Stock Price 1 Day After Announcement": {
+            "Description": "Closing price of the target stock price 1 day after the announcement date."
+          },
+          "Acquiror Stock Price on Announcement Day": {
+            "Description": "Closing price of the acquiror stock price on the announcement date."
+          },
+          "Acquiror Stock Price 1 Day Prior to Announcement": {
+            "Description": "Closing price of the acquiror stock price 1 day before the announcement date."
+          },
+          "Acquiror Stock Price 1 Week Prior to Announcement": {
+            "Description": "Closing price of the acquiror stock price 1 week before the announcement date."
+          },
+          "Acquiror Stock Price on 1 Day After Announcement": {
+            "Description": "Closing price of the acquiror stock price 1 day after the announcement date."
+          },
+          "After-Tax Synergies ($M)": {
+            "Description": "Synergies in US dollars expected as a result of the transaction, as disclosed in press or investor presentations.",
+            "unit": "millions"
+          },
+          "Expected Accretive/Dilutive Type": {
+            "Description": "Expected impact on EPS – accretive, dilutive, or no change.",
+            "values": "Accretive, Dilutive, No change"
+          },
+          "Cross Border": {
+            "Description": "If the target (or its assets) is not located in the same country as the acquiror.",
+            "values": "Y, N"
+          },
+          "Bankruptcy Deal": {
+            "Description": "If the target is bankrupt or goes bankrupt during the transaction.",
+            "values": "Y, N"
+          }
+        },
+      "relationships": [
+          "refinitiv_fields.title"
+        ]
+    }
+  },
+  "refinitiv_fields": {
+    "trcode": {
+      "description": "Refinitiv TR code for a data field",
+      "relationships": [
+          "deal_sheet.code",
+          "deal_details.name"
+      ]
+    },
+    "title": {
+      "description": "Name of Refinitiv data field.",
+      "relationships": [
+        "deal_sheet.field_name"
+      ]
+    },
+    "description": {
+      "description": "Description of Refinitiv data field."
+    }
+  }
+}
