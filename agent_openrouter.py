@@ -6,7 +6,7 @@ import pandas as pd
 from openai import OpenAI
 
 # Set up OpenRouter environment
-api_key = "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"
+api_key = "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"
 api_base = "https://openrouter.ai/api/v1"
 model = "o3-mini-high"  # OpenRouter model
 
@@ -139,37 +139,43 @@ def generate_sql_query(human_query, schema_text):
 
     ** Specific Guidelines for Common Queries: **
     1. For transaction size filters:
-    - The rank_value field in deals_summary is in millions of dollars
-    - For ranges like "$1bn-$5bn", use rank_value BETWEEN 1000 AND 5000
+        - The rank_value field in deals_summary is in millions of dollars
+        - For ranges like "$1bn-$5bn", use rank_value BETWEEN 1000 AND 5000
 
     2. For queries involving company names:
-    - Always look into deals_summary table first when looking for target names or acquiror names
-    - ** IMPORTANT ** Include the entire hierarchal relationship of the company which includes the parent company and ultimate parent company. For example, when searching for an acquiror include: acquiror_name, acquiror_parent_name and acquiror_ultimate_parent_name in the query
-    - Convert strings to lower case and use "LIKE '%string%'
+        - Always look into deals_summary table first when looking for target names or acquiror names
+        - ** IMPORTANT ** Always search the entire hierarchal relationship of the company which includes the 'parent company' and 'ultimate parent company'. 
+        - When searching for an acquiror always include: acquiror_name, acquiror_parent_name and acquiror_ultimate_parent_name in the WHERE conditions of the query    
+        - Convert strings to lower case and use "LIKE '%string%'
+        - Example: "SELECT ... FROM ... WHERE LOWER(ds.target_name) LIKE '%blackstone%' OR LOWER(ds.target_parent_name) LIKE '%blackstone%' OR LOWER(ds.target_ultimateparent_name) LIKE '%blackstone%'"
 
     3. For country-specific transactions:
-    - Use company.country_headquarters to filter by country
-    - For "U.S. transactions", check if either acquiror or target is in the United States
-    - Join deals_summary with company table using appropriate permid fields
+        - Use company.country_headquarters to filter by country
+        - For "U.S. transactions", check if either acquiror or target is in the United States
+        - Join deals_summary with company table using appropriate permid fields
 
-    4. For industry exclusions (e.g., "excl. REITs"):
-    - Filter using company.gics_sector or company.gics_industry
-    - For REITs, exclude where gics_sector = 'Real Estate' AND gics_industry LIKE '%REIT%'
+    4. Queries involving sector or industry:
+        - Filter using company.gics_sector or company.gics_industry
+        - For queries on 'healthcare', use company.gics_sector = 'Health Care'
+        - Use your knowledge to select the most similar SECTOR from this sector list: ["Consumer Discretionary", "Materials", "Consumer Staples", "Information Technology", "Utilities", "Industrials", "Energy", "Health Care", "Financials", "Communication Services", "Real Estate"]
+        - Use your knowledge to select the most similar INDUSTRY from this industry list: ["Aerospace & Defense, Air Freight & Logistics, Automobile Components, Automobiles, Banks, Beverages, Biotechnology, Broadline Retail, Building Products, Capital Markets, Chemicals, Commercial Services & Supplies, Communications Equipment, Construction & Engineering, Construction Materials, Consumer Finance, Consumer Staples Distribution & Retail, Containers & Packaging, Distributors, Diversified Consumer Services, Diversified REITs, Diversified Telecommunication Services, Electric Utilities, Electrical Equipment, Electronic Equipment, Instruments & Components, Energy Equipment & Services, Entertainment, Financial Services, Food Products, Gas Utilities, Ground Transportation, Health Care Equipment & Supplies, Health Care Providers & Services, Health Care REITs, Health Care Technology, Hotel & Resort REITs, Hotels, Restaurants & Leisure, Household Durables, Household Products, IT Services, Independent Power and Renewable Electricity Producers, Industrial Conglomerates, Industrial REITs, Insurance, Interactive Media & Services, Leisure Products, Life Sciences Tools & Services, Machinery, Marine Transportation, Media, Metals & Mining, Mortgage Real Estate Investment Trusts (REITs), Multi-Utilities, Office REITs, Oil, Gas & Consumable Fuels, Paper & Forest Products, Passenger Airlines, Personal Care Products, Pharmaceuticals, Professional Services, Real Estate Management & Development, Residential REITs, Retail REITs, Semiconductors & Semiconductor Equipment, Software, Specialized REITs, Specialty Retail, Technology Hardware, Storage & Peripherals, Textiles, Apparel & Luxury Goods, Tobacco, Trading Companies & Distributors, Transportation Infrastructure, Water Utilities, Wireless Telecommunication Services"]
+        - For excluding REITs(e.g., "excl. REITs"): exclude where gics_sector = 'Real Estate' AND gics_industry LIKE '%REIT%'
+        - Example: [query="Select deals in the electric vehicles", answer="SELECT ... FROM ... WHERE LOWER(company.gics_sector) LIKE '%consumer discretionary%' OR LOWER(company.gics_industry LIKE '%automobiles%' OR LOWER(company.gics_industry LIKE '%automobile components%'"]
 
-    5. For time-based queries (e.g., "past 10 years"):
-    - Use deals_summary.date_announced or deals_summary.date_effective
-    - Filter with date_announced >= DATE_SUB(CURDATE(), INTERVAL 10 YEAR)
+    5. Time-based queries (e.g., "past 10 years"):
+        - Use deals_summary.date_announced or deals_summary.date_effective
+        - Filter with date_announced >= DATE_SUB(CURDATE(), INTERVAL 10 YEAR)
 
-    6. For queries involving the deal details:
-    - Always look into deal_sheet table first before go to deal_summary table.
-    - The schema includes three new tables: deal_sheet, refinitiv_fields, and deals_details
-    - These tables are related: deal_sheet.code, deals_details.name, and refinitiv_fields.trcode all refer to the same field codes
-    - Use these relationships to join these tables when needed
-    - deal_sheet contains field names and their codes
-    - refinitiv_fields contains additional information about fields
-    - deals_details contains detailed transaction information
+    6. Queries involving deal details and deal characteristics:
+        - Always look into deal_sheet table first before go to deal_summary table.
+        - The schema includes three new tables: deal_sheet, refinitiv_fields, and deals_details
+        - These tables are related: deal_sheet.code, deals_details.name, and refinitiv_fields.trcode all refer to the same field codes
+        - Use these relationships to join these tables when needed
+        - deal_sheet contains field names and their codes
+        - refinitiv_fields contains additional information about fields
+        - deals_details contains detailed transaction information
 
-    7. For queries involving people:
+    7. Queries involving people:
         - Always look into the person and person_history tables before going to deals_summary. 
         - Join person and person_history with person_permid
         - Join person_history and company with person_history.company_id and company.permid
@@ -178,9 +184,11 @@ def generate_sql_query(human_query, schema_text):
         - If position_end_date is null, assume they are currently affiliated with the company
         - When looking up positions like 'CEO' in position_name, use LIKE %CEO%
 
-    8. For queries involving advisors:
+    8. Queries involving advisors:
         - Always look into the advisor_fees table before going to deal_history_consolidated and fees_verification_consolidated tables
         - When querying for strings in fee_context, fee_relative, selection_process, engagement_context, engagement_role, convert string to lower case and use "LIKE '%string%'"
+
+
 
     
 
@@ -192,7 +200,7 @@ def generate_sql_query(human_query, schema_text):
     - Use clear and consistent indentation for readability
     - When querying for strings, convert to lower case and use the LIKE '%string%' operator
 
-    Generate an MySQL query that answers the human query. Only provide the MySQL statement as your answer."""
+    Generate an MySQL query that answers the human query. Only provide the MySQL statement as your answer. If the question does not seem related to the database, just return "I don't know" as the answer"""
 
     try:
         response = client.chat.completions.create(
