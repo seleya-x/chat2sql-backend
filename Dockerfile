@@ -15,11 +15,13 @@ RUN apt-get update && apt-get install -y curl && \
 # 验证安装
 RUN python --version && node --version && npm --version
 
+COPY requirements.txt .
+# 安装 Python 依赖
+RUN pip install --no-cache-dir -r requirements.txt
+
 # 复制项目文件
 COPY . .
 
-# 安装 Python 依赖
-RUN pip install --no-cache-dir -r requirements.txt
 
 RUN npm install
 

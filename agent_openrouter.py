@@ -6,20 +6,19 @@ import pandas as pd
 from openai import OpenAI
 
 # Set up OpenRouter environment
-api_key = "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"
+api_key = "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"
 api_base = "https://openrouter.ai/api/v1"
 model = "o3-mini-high"  # OpenRouter model
 
 # Check if API key is set
 if not api_key:
     print("Error: OPENROUTER_API_KEY environment variable is not set.")
-    print("Please set your OpenRouter API key using: export OPENROUTER_API_KEY=your_api_key")
+    print(
+        "Please set your OpenRouter API key using: export OPENROUTER_API_KEY=your_api_key"
+    )
 
 # Initialize the OpenAI client with OpenRouter configuration
-client = OpenAI(
-    api_key=api_key,
-    base_url=api_base
-)
+client = OpenAI(api_key=api_key, base_url=api_base)
 
 
 def load_schema():
@@ -27,48 +26,52 @@ def load_schema():
     try:
         # Construct the schema file path relative to this script's directory
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        schema_path = os.path.join(current_dir, 'database_schema_relationships_llm.json')
-        
-        with open(schema_path, 'r') as f:
+        schema_path = os.path.join(
+            current_dir, "database_schema_relationships_llm.json"
+        )
+
+        with open(schema_path, "r") as f:
             schema_data = json.load(f)
-        
+
         # Process the schema into a structured format for the prompt
         schema_text = "DATABASE SCHEMA:\n\n"
-        
+
         # Track relationships for later use
         all_relationships = {}
-        
+
         # Process each table
         for table_name, fields in schema_data.items():
             schema_text += f"TABLE: {table_name}\n"
-            
+
             # Process each field in the table
             for field_name, field_info in fields.items():
                 schema_text += f"  - {field_name}"
-                
+
                 # Add description if available
                 if "description" in field_info:
                     schema_text += f": {field_info['description']}"
-                
+
                 # Add possible values if available
                 if "values" in field_info:
                     schema_text += f"\n    Possible values: {field_info['values']}"
-                
+
                 # Add relationships if available
                 if "relationships" in field_info:
-                    schema_text += f"\n    Relationships: {', '.join(field_info['relationships'])}"
-                    
+                    schema_text += (
+                        f"\n    Relationships: {', '.join(field_info['relationships'])}"
+                    )
+
                     # Store relationship for the relationship map
                     relationship_key = f"{table_name}.{field_name}"
                     all_relationships[relationship_key] = field_info["relationships"]
-                
+
                 schema_text += "\n"
-            
+
             schema_text += "\n"
-        
+
         # Add a relationship map section
         schema_text += "KEY TABLE RELATIONSHIPS:\n\n"
-        
+
         # Process relationships to create a more readable format
         processed_relationships = set()
         for source, targets in all_relationships.items():
@@ -76,22 +79,29 @@ def load_schema():
                 # Create a unique identifier for this relationship to avoid duplicates
                 rel_id = f"{source} <-> {target}"
                 rev_rel_id = f"{target} <-> {source}"
-                
-                if rel_id not in processed_relationships and rev_rel_id not in processed_relationships:
+
+                if (
+                    rel_id not in processed_relationships
+                    and rev_rel_id not in processed_relationships
+                ):
                     schema_text += f"- {source} connects to {target}\n"
                     processed_relationships.add(rel_id)
-        
+
         # Add common query patterns section
         schema_text += "\nCOMMON QUERY PATTERNS:\n\n"
         schema_text += "1. To find deals with specific acquirors or targets:\n"
         schema_text += "   - Use deals_summary table with filters on acquiror_name or target_name\n\n"
         schema_text += "2. To find fees associated with deals:\n"
-        schema_text += "   - Join fees_verification_consolidated with deals_summary on deal_id\n\n"
+        schema_text += (
+            "   - Join fees_verification_consolidated with deals_summary on deal_id\n\n"
+        )
         schema_text += "3. To find advisor information:\n"
         schema_text += "   - Use the advisor table and join with fees_verification_consolidated using advisor_name\n\n"
         schema_text += "4. To distinguish between sellside (target) and buyside (acquiror) advisors:\n"
-        schema_text += "   - Filter fees_verification_consolidated on the 'type' field\n"
-        
+        schema_text += (
+            "   - Filter fees_verification_consolidated on the 'type' field\n"
+        )
+
         return schema_text
     except Exception as e:
         print(f"Error loading schema: {e}")
@@ -205,60 +215,79 @@ def generate_sql_query(human_query, schema_text):
     try:
         response = client.chat.completions.create(
             model=model,  # Use the OpenRouter model variable
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=10000  # OpenRouter uses max_tokens instead of max_completion_tokens
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=10000,  # OpenRouter uses max_tokens instead of max_completion_tokens
         )
-        
+
         # Debug response is now disabled for cleaner output
         # print("OpenRouter API Response:")
         # print(response)
-        
+
         # Check if the response has the expected structure
-        if hasattr(response, 'choices') and len(response.choices) > 0 and hasattr(response.choices[0], 'message'):
+        if (
+            hasattr(response, "choices")
+            and len(response.choices) > 0
+            and hasattr(response.choices[0], "message")
+        ):
             sql_query = response.choices[0].message.content.strip()
         else:
             print("Unexpected response structure from OpenRouter API")
             raise ValueError("Invalid response structure from OpenRouter API")
-        
+
         # Clean the SQL query for direct execution
         # Remove markdown code blocks if present
-        if sql_query.startswith('```') and '```' in sql_query[3:]:
-            sql_query = sql_query.split('```', 2)[1]
+        if sql_query.startswith("```") and "```" in sql_query[3:]:
+            sql_query = sql_query.split("```", 2)[1]
             # Remove SQL language identifier if present
-            if sql_query.lower().startswith('sql'):
+            if sql_query.lower().startswith("sql"):
                 sql_query = sql_query[3:].lstrip()
-        
+
         # Ensure the query ends with a semicolon
-        if not sql_query.rstrip().endswith(';'):
-            sql_query = sql_query.rstrip() + ';'
-            
+        if not sql_query.rstrip().endswith(";"):
+            sql_query = sql_query.rstrip() + ";"
+
         # Remove any explanatory text before or after the SQL query
-        lines = sql_query.split('\n')
+        lines = sql_query.split("\n")
         clean_lines = []
         in_query = False
-        
+
         for line in lines:
             line = line.rstrip()
             # Skip empty lines
             if not line.strip():
                 continue
             # Check if this line looks like SQL
-            if any(keyword in line.upper() for keyword in ['SELECT', 'FROM', 'WHERE', 'JOIN', 'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT', 'INSERT', 'UPDATE', 'DELETE']):
+            if any(
+                keyword in line.upper()
+                for keyword in [
+                    "SELECT",
+                    "FROM",
+                    "WHERE",
+                    "JOIN",
+                    "GROUP BY",
+                    "ORDER BY",
+                    "HAVING",
+                    "LIMIT",
+                    "INSERT",
+                    "UPDATE",
+                    "DELETE",
+                ]
+            ):
                 in_query = True
             if in_query:
                 clean_lines.append(line)
-        
+
         # If we found SQL lines, use them; otherwise use the original (might be a simple query)
         if clean_lines:
-            sql_query = '\n'.join(clean_lines)
-        
+            sql_query = "\n".join(clean_lines)
+
         return sql_query
     except Exception as e:
         error_message = str(e)
         if not api_key:
-            print(f"Error generating SQL query: API key not set. Please set the OPENROUTER_API_KEY environment variable.")
+            print(
+                f"Error generating SQL query: API key not set. Please set the OPENROUTER_API_KEY environment variable."
+            )
         else:
             print(f"Error generating SQL query: {error_message}")
         return None
@@ -266,7 +295,7 @@ def generate_sql_query(human_query, schema_text):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python agent.py \"<human_query>\"")
+        print('Usage: python agent.py "<human_query>"')
         sys.exit(1)
 
     human_query = sys.argv[1]
@@ -279,10 +308,10 @@ def main():
     if sql:
         # Format the SQL query for better readability
         formatted_sql = format_sql(sql)
-        
+
         # Output only the formatted SQL query with no headers or extra text
         print(formatted_sql)
-        
+
         # Write the SQL query to a text file silently
         try:
             with open("sql_query.txt", "w") as f:
@@ -296,93 +325,128 @@ def main():
 def format_sql(sql):
     """Format SQL query for better human readability."""
     # Replace multiple spaces with a single space
-    sql = ' '.join(sql.split())
-    
+    sql = " ".join(sql.split())
+
     # Add newlines after specific SQL keywords for better readability
-    keywords = ['FROM', 'WHERE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 
-                'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT', 'UNION', 'UNION ALL']
-    
+    keywords = [
+        "FROM",
+        "WHERE",
+        "JOIN",
+        "LEFT JOIN",
+        "RIGHT JOIN",
+        "INNER JOIN",
+        "GROUP BY",
+        "ORDER BY",
+        "HAVING",
+        "LIMIT",
+        "UNION",
+        "UNION ALL",
+    ]
+
     # First, handle the SELECT statement separately to format each column on a new line
-    if 'SELECT' in sql.upper():
+    if "SELECT" in sql.upper():
         # Split the query at the SELECT keyword
-        parts = re.split(r'\bSELECT\b', sql, flags=re.IGNORECASE, maxsplit=1)
-        
+        parts = re.split(r"\bSELECT\b", sql, flags=re.IGNORECASE, maxsplit=1)
+
         if len(parts) > 1:
             prefix = parts[0]  # Usually empty
-            rest = parts[1]    # The rest of the query
-            
+            rest = parts[1]  # The rest of the query
+
             # Find where the FROM clause starts
-            from_match = re.search(r'\bFROM\b', rest, re.IGNORECASE)
+            from_match = re.search(r"\bFROM\b", rest, re.IGNORECASE)
             if from_match:
-                select_part = rest[:from_match.start()].strip()
-                post_select = rest[from_match.start():].strip()
-                
+                select_part = rest[: from_match.start()].strip()
+                post_select = rest[from_match.start() :].strip()
+
                 # Split the SELECT columns by commas, but be careful with functions
                 # that might contain commas within parentheses
                 columns = []
                 current_col = ""
                 paren_level = 0
-                
+
                 for char in select_part:
-                    if char == '(' and not (current_col.endswith("'") and not current_col.endswith("\\'")):
+                    if char == "(" and not (
+                        current_col.endswith("'") and not current_col.endswith("\\'")
+                    ):
                         paren_level += 1
                         current_col += char
-                    elif char == ')' and not (current_col.endswith("'") and not current_col.endswith("\\'")):
+                    elif char == ")" and not (
+                        current_col.endswith("'") and not current_col.endswith("\\'")
+                    ):
                         paren_level -= 1
                         current_col += char
-                    elif char == ',' and paren_level == 0:
+                    elif char == "," and paren_level == 0:
                         columns.append(current_col.strip())
                         current_col = ""
                     else:
                         current_col += char
-                
+
                 if current_col.strip():
                     columns.append(current_col.strip())
-                
+
                 # Format the SELECT part with each column on a new line
                 formatted_select = "SELECT\n    " + ",\n    ".join(columns)
-                
+
                 # Reconstruct the query
                 sql = prefix + formatted_select + "\nFROM" + post_select[4:]
             else:
                 # If FROM is not found, just add a newline after SELECT
                 sql = prefix + "SELECT\n    " + rest
-    
+
     # Process other SQL keywords
     for keyword in keywords:
         # Only replace if the keyword is a whole word (not part of another word)
         # Don't add a newline for FROM since we already handled it
-        if keyword != 'FROM':
-            sql = re.sub(r'\b' + keyword + r'\b', '\n' + keyword, sql, flags=re.IGNORECASE)
-    
+        if keyword != "FROM":
+            sql = re.sub(
+                r"\b" + keyword + r"\b", "\n" + keyword, sql, flags=re.IGNORECASE
+            )
+
     # Remove any leading newlines
-    sql = sql.lstrip('\n')
-    
+    sql = sql.lstrip("\n")
+
     # Add indentation for better readability
-    lines = sql.split('\n')
+    lines = sql.split("\n")
     formatted_lines = []
-    
+
     # Process each line to ensure proper indentation
     for line in lines:
         line_stripped = line.strip()
-        
+
         # Main SQL keywords should be at the leftmost position
-        if any(line_stripped.upper().startswith(keyword) for keyword in ['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT']):
+        if any(
+            line_stripped.upper().startswith(keyword)
+            for keyword in [
+                "SELECT",
+                "FROM",
+                "WHERE",
+                "GROUP BY",
+                "ORDER BY",
+                "HAVING",
+                "LIMIT",
+            ]
+        ):
             formatted_lines.append(line_stripped)
         # Items in the SELECT statement should be indented
-        elif line_stripped.startswith(',') or (len(formatted_lines) > 0 and formatted_lines[-1].strip().startswith('SELECT')):
+        elif line_stripped.startswith(",") or (
+            len(formatted_lines) > 0
+            and formatted_lines[-1].strip().startswith("SELECT")
+        ):
             # Remove any leading comma and whitespace
-            clean_line = line_stripped.lstrip(',').strip()
-            formatted_lines.append('    ' + clean_line)
+            clean_line = line_stripped.lstrip(",").strip()
+            formatted_lines.append("    " + clean_line)
         # JOIN statements should be at the same level as FROM
-        elif any(line_stripped.upper().startswith(join) for join in ['JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN']):
+        elif any(
+            line_stripped.upper().startswith(join)
+            for join in ["JOIN", "LEFT JOIN", "RIGHT JOIN", "INNER JOIN", "OUTER JOIN"]
+        ):
             formatted_lines.append(line_stripped)
         # Everything else gets a standard indentation
         else:
-            formatted_lines.append('    ' + line_stripped)
-    
+            formatted_lines.append("    " + line_stripped)
+
     # Return only the formatted SQL string without any additional values
-    formatted_sql = '\n'.join(formatted_lines)
+    formatted_sql = "\n".join(formatted_lines)
     return formatted_sql
 
 
