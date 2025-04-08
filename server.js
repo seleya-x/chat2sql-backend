@@ -72,7 +72,7 @@ app.post('/api/execute-query', (req, res) => {
 
         // Try to read the CSV file
         try {
-            const csvPath = path.join('/app/data', 'deal_extract_docs_results.csv');
+            const csvPath = path.join('/app', 'deal_extract_docs_results.csv');
             const csvContent = fs.readFileSync(csvPath, 'utf8');
 
             // Parse CSV data
