@@ -4,7 +4,9 @@
   "description": "",
   "main": "agent-server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start1": "node agent-server.js",
+    "start2": "node admin-handlers.js"
   },
   "keywords": [],
   "author": "",
