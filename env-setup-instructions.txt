@@ -1,0 +1,25 @@
+# Supabase Environment Variables Setup
+
+Please create a .env file in this directory with the following content:
+
+```
+SUPABASE_URL=https://funaizcaqsbhxafbmmyq.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_from_dashboard
+```
+
+IMPORTANT: The key you provided is the anon key, not the service role key. 
+The service role key is different and has higher privileges.
+
+To find your service role key:
+1. Go to the Supabase dashboard: https://app.supabase.com/
+2. Select your project
+3. Go to "Project Settings" > "API"
+4. Scroll down to "Project API keys"
+5. Look for "service_role key" (it will be hidden)
+6. Click "Reveal" to see the key
+
+After creating the .env file, uncomment the admin routes in agent-server.js:
+- Uncomment line 6: const adminRoutes = require('./admin-handlers');
+- Uncomment line 14: app.use('/api/admin', adminRoutes);
+
+Then restart the backend server.

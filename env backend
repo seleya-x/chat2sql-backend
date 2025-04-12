@@ -1,0 +1,28 @@
+# Database Configuration
+DB_HOST=pjttest.mysql.database.azure.com
+DB_USER=pjtadmin
+DB_PASSWORD=Port@ge123
+DB_PORT=3306
+DB_NAME=pjtdeals
+DB_SSL=true
+DB_SSL_VERIFY=false
+
+# OpenRouter API Configuration
+OPENROUTER_API_KEY=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
+OPENROUTER_API_BASE=https://openrouter.ai/api/v1
+OPENROUTER_MODEL=o3-mini-high
+
+# Server Configuration
+FLASK_PORT=5002
+FLASK_DEBUG=true
+NODE_PORT=3001
+
+# File Paths
+SQL_QUERY_FILE=sql_query.txt
+RESULTS_CSV_FILE=deal_extract_docs_results.csv
+SCHEMA_FILE=database_schema_relationships_llm.json
+HISTORY_FILE=chat_history.json
+
+# Supabase Configuration
+SUPABASE_URL=https://funaizcaqsbhxafbmmyq.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1bmFpemNhcXNiaHhhZmJtbXlxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MzQwMTMzMiwiZXhwIjoyMDU4OTc3MzMyfQ.1MdSLvHExvQPNvXFiAjcLYvUeZN8a2w8iTPhSEcu-88

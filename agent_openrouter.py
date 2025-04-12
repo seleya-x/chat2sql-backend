@@ -4,16 +4,20 @@ import json
 import re
 import pandas as pd
 from openai import OpenAI
+from dotenv import load_dotenv
 
-# Set up OpenRouter environment
-api_key = "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"
-api_base = "https://openrouter.ai/api/v1"
-model = "o3-mini-high"  # OpenRouter model
+# Load environment variables
+load_dotenv()
+
+# Set up OpenRouter environment from environment variables
+api_key = os.getenv("OPENROUTER_API_KEY")
+api_base = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
+model = os.getenv("OPENROUTER_MODEL", "o3-mini-high")  # OpenRouter model
 
 # Check if API key is set
 if not api_key:
     print("Error: OPENROUTER_API_KEY environment variable is not set.")
-    print("Please set your OpenRouter API key using: export OPENROUTER_API_KEY=your_api_key")
+    print("Please set your OpenRouter API key in the .env file or export it: export OPENROUTER_API_KEY=your_api_key")
 
 # Initialize the OpenAI client with OpenRouter configuration
 client = OpenAI(
@@ -25,9 +29,12 @@ client = OpenAI(
 def load_schema():
     """Load the database schema from the JSON file and process it into a structured format."""
     try:
+        # Get schema file path from environment variables or use default
+        schema_file = os.getenv("SCHEMA_FILE", "database_schema_relationships_llm.json")
+        
         # Construct the schema file path relative to this script's directory
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        schema_path = os.path.join(current_dir, 'database_schema_relationships_llm.json')
+        schema_path = os.path.join(current_dir, schema_file)
         
         with open(schema_path, 'r') as f:
             schema_data = json.load(f)
@@ -102,8 +109,16 @@ def generate_sql_query(human_query, schema_text):
     prompt = f"""
     You are an agent designed to interact with an MySQL database.
     Given an input question, create a syntactically correct MySQL query to run, then look at the results of the query and return the answer.
-    Limit your query to at most 10 results using the LIMIT clause.
-    You can order the results by a relevant column to return the most interesting examples in the database.
+    Limit your query to at most 20 results using the LIMIT clause.
+    Always show the following columns:
+    - DealID
+    - deals_summary.target_name
+    - deals_summary.acquiror_name
+    - deals_summary.date_announced
+    - deals_summary.rank_value
+    - Total Target Fees
+    - Total Acquiror Fees
+    - Other relevant columns relevant to the query
     Never query for all the columns from a specific table, only ask for a the few relevant columns given the question.
     DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
 
@@ -154,8 +169,8 @@ def generate_sql_query(human_query, schema_text):
         - For "U.S. transactions", check if either acquiror or target is in the United States
         - Join deals_summary with company table using appropriate permid fields
 
-    4. Queries involving sector or industry:
-        - Filter using company.gics_sector or company.gics_industry
+    4. Queries involving sectors or industries:
+        - Filter using company.gics_sector or company.gics_industry. Do NOT search on company.name
         - For queries on 'healthcare', use company.gics_sector = 'Health Care'
         - Use your knowledge to select the most similar SECTOR from this sector list: ["Consumer Discretionary", "Materials", "Consumer Staples", "Information Technology", "Utilities", "Industrials", "Energy", "Health Care", "Financials", "Communication Services", "Real Estate"]
         - Use your knowledge to select the most similar INDUSTRY from this industry list: ["Aerospace & Defense, Air Freight & Logistics, Automobile Components, Automobiles, Banks, Beverages, Biotechnology, Broadline Retail, Building Products, Capital Markets, Chemicals, Commercial Services & Supplies, Communications Equipment, Construction & Engineering, Construction Materials, Consumer Finance, Consumer Staples Distribution & Retail, Containers & Packaging, Distributors, Diversified Consumer Services, Diversified REITs, Diversified Telecommunication Services, Electric Utilities, Electrical Equipment, Electronic Equipment, Instruments & Components, Energy Equipment & Services, Entertainment, Financial Services, Food Products, Gas Utilities, Ground Transportation, Health Care Equipment & Supplies, Health Care Providers & Services, Health Care REITs, Health Care Technology, Hotel & Resort REITs, Hotels, Restaurants & Leisure, Household Durables, Household Products, IT Services, Independent Power and Renewable Electricity Producers, Industrial Conglomerates, Industrial REITs, Insurance, Interactive Media & Services, Leisure Products, Life Sciences Tools & Services, Machinery, Marine Transportation, Media, Metals & Mining, Mortgage Real Estate Investment Trusts (REITs), Multi-Utilities, Office REITs, Oil, Gas & Consumable Fuels, Paper & Forest Products, Passenger Airlines, Personal Care Products, Pharmaceuticals, Professional Services, Real Estate Management & Development, Residential REITs, Retail REITs, Semiconductors & Semiconductor Equipment, Software, Specialized REITs, Specialty Retail, Technology Hardware, Storage & Peripherals, Textiles, Apparel & Luxury Goods, Tobacco, Trading Companies & Distributors, Transportation Infrastructure, Water Utilities, Wireless Telecommunication Services"]
@@ -189,8 +204,6 @@ def generate_sql_query(human_query, schema_text):
         - When querying for strings in fee_context, fee_relative, selection_process, engagement_context, engagement_role, convert string to lower case and use "LIKE '%string%'"
 
 
-
-    
 
     Query Structure Best Practices:
     - Start with the main table that contains the core information needed

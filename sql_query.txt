@@ -1,18 +1,15 @@
 SELECT
-    ds.deal_id AS Deal_ID,
-    ds.target_name AS Target,
-    ds.date_announced AS Announcement_Date,
-    CONCAT(p.first_name, ' ', p.last_name) AS Former_CEO,
-    ph.CEO_end_date AS CEO_Replacement_Date
-
-FROM deals_summary ds INNER
-
-JOIN person_history ph ON ds.target_permid = ph.company_id INNER
-
-JOIN person p ON ph.person_permid = p.person_permid
-
-WHERE ph.position_name LIKE '%CEO%' AND ph.CEO_start_date <= ds.date_announced AND ph.CEO_end_date IS NOT NULL AND ph.CEO_end_date > ds.date_announced AND ph.CEO_end_date <= DATE_ADD(ds.date_announced, INTERVAL 12 MONTH)
-
-ORDER BY ds.date_announced DESC
-
-LIMIT 10;
+    ds.deal_id AS DealID,
+    ds.target_name AS Target_Name,
+    ds.acquiror_name AS Acquiror_Name,
+    ds.date_announced AS Date_Announced,
+    ds.rank_value AS Rank_Value,
+    SUM(CASE WHEN fvc.type = 'target' THEN fvc.advisor_fee ELSE 0 END) AS `Total Target Fees`,
+    SUM(CASE WHEN fvc.type = 'acquiror' THEN fvc.advisor_fee ELSE 0 END) AS `Total Acquiror Fees`,
+    GROUP_CONCAT(DISTINCT dh.selection_process) AS Selection_Process
+FROM deals_summary ds
+JOIN deal_history_consolidated dh ON ds.deal_id = dh.deal_id LEFT
+JOIN fees_verification_consolidated fvc ON ds.deal_id = fvc.deal_id
+WHERE LOWER(dh.selection_process) LIKE '%bake-off%'
+GROUP BY ds.deal_id, ds.target_name, ds.acquiror_name, ds.date_announced, ds.rank_value
+LIMIT 20;

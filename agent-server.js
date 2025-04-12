@@ -1,257 +1,266 @@
 const express = require('express');
 const { exec } = require('child_process');
 const cors = require('cors');
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
+const adminRoutes = require('./admin-handlers');
 const app = express();
-const port = process.env.PORT || 3001;
+const port = 3001;
 
-// The root directory where Python agent files are located
-const AGENT_ROOT_PATH = "/Users/buzzdog/Library/CloudStorage/OneDrive-Personal/Documents/Code/PJT/sql_with_table_schema-master";
-const DEFAULT_AGENT_FILENAME = "agent_openrouter.py";
-const SQL_QUERY_FILE = path.join(AGENT_ROOT_PATH, "sql_query.txt");
-const QUERY_EXECUTOR_SCRIPT = path.join(AGENT_ROOT_PATH, "run_specific_query.py");
-const QUERY_RESULTS_FILE = path.join(AGENT_ROOT_PATH, "deal_extract_docs_results.csv");
-
-// Configure CORS to allow requests from anywhere (adjust for production)
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
+// Enable CORS for all routes
+app.use(cors());
 app.use(express.json());
 
-// Add health check endpoint
+// Use admin routes
+app.use('/api/admin', adminRoutes);
+
+// Health check endpoint
 app.get('/health', (req, res) => {
-  console.log('Health check request received');
-  res.json({ status: 'online', message: 'Agent server is running' });
+  res.status(200).send('Agent server is running');
 });
 
-// New endpoint to save SQL to a file
-app.post('/save-sql', (req, res) => {
-  const { sql } = req.body;
-  
-  if (!sql) {
-    console.error('SQL is required');
-    return res.status(400).json({ message: 'SQL is required' });
-  }
-  
-  console.log(`Saving SQL query to ${SQL_QUERY_FILE}`);
-  
-  try {
-    // Check if the directory exists
-    const dir = path.dirname(SQL_QUERY_FILE);
-    if (!fs.existsSync(dir)) {
-      console.log(`Creating directory: ${dir}`);
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    
-    fs.writeFileSync(SQL_QUERY_FILE, sql, 'utf8');
-    console.log('SQL saved successfully');
-    return res.json({ message: 'SQL saved successfully' });
-  } catch (error) {
-    console.error(`Error saving SQL file: ${error.message}`);
-    return res.status(500).json({ message: `Error: ${error.message}` });
-  }
-});
-
-// New endpoint to execute specific SQL query
-app.post('/execute-sql', (req, res) => {
-  const { sql } = req.body;
-  
-  // First save the SQL to file
-  try {
-    const dir = path.dirname(SQL_QUERY_FILE);
-    if (!fs.existsSync(dir)) {
-      console.log(`Creating directory: ${dir}`);
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    
-    fs.writeFileSync(SQL_QUERY_FILE, sql, 'utf8');
-    console.log('SQL saved to file before execution');
-  } catch (error) {
-    console.error(`Error saving SQL file before execution: ${error.message}`);
-    return res.status(500).json({ message: `Error saving SQL: ${error.message}` });
-  }
-  
-  console.log(`Executing SQL query using ${QUERY_EXECUTOR_SCRIPT}`);
-  
-  // Execute the Python script to run the SQL
-  const command = `python "${QUERY_EXECUTOR_SCRIPT}"`;
-  
-  exec(command, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error executing Python script: ${error}`);
-      return res.status(500).json({ message: `Error: ${error.message}` });
-    }
-    
-    if (stderr) {
-      console.error(`Python script stderr: ${stderr}`);
-      // Some scripts may output to stderr but still work correctly
-      console.log(`Python script stdout: ${stdout}`);
-      
-      if (stdout) {
-        return res.json({ result: stdout, warning: stderr });
-      }
-      return res.status(500).json({ message: `Error: ${stderr}` });
-    }
-    
-    console.log(`Python script executed successfully`);
-    
-    // Try to read the results file
-    try {
-      if (fs.existsSync(QUERY_RESULTS_FILE)) {
-        // Try to parse CSV file
-        console.log(`Results file found at ${QUERY_RESULTS_FILE}`);
-        const csvData = fs.readFileSync(QUERY_RESULTS_FILE, 'utf8');
-        return res.json({ 
-          result: stdout,
-          message: 'SQL executed successfully' 
-        });
-      } else {
-        console.log('No results file found after execution');
-        return res.json({ 
-          result: stdout,
-          message: 'SQL executed successfully, but no results file was found' 
-        });
-      }
-    } catch (fileError) {
-      console.error(`Error reading results file: ${fileError.message}`);
-      return res.json({ 
-        result: stdout,
-        message: 'SQL executed successfully, but error reading results file' 
-      });
-    }
-  });
-});
-
-// New endpoint to get CSV results
-app.get('/get-csv-results', (req, res) => {
-  console.log(`Fetching CSV results from ${QUERY_RESULTS_FILE}`);
-  
-  try {
-    if (fs.existsSync(QUERY_RESULTS_FILE)) {
-      const csvData = fs.readFileSync(QUERY_RESULTS_FILE, 'utf8');
-      
-      // Parse CSV data
-      const rows = csvData.trim().split('\n');
-      const headers = rows[0].split(',').map(header => header.trim());
-      
-      const data = rows.slice(1).map(row => {
-        const values = row.split(',').map(value => value.trim());
-        return values;
-      });
-      
-      console.log(`CSV parsed successfully: ${headers.length} columns, ${data.length} rows`);
-      return res.json({
-        columns: headers,
-        data: data
-      });
-    } else {
-      console.error('No results file found');
-      return res.status(404).json({ message: 'No results file found' });
-    }
-  } catch (error) {
-    console.error(`Error reading CSV file: ${error.message}`);
-    return res.status(500).json({ message: `Error: ${error.message}` });
-  }
-});
-
-app.post('/execute-agent', (req, res) => {
-  const { query, agentPath } = req.body;
+// API endpoint to execute Python agent
+app.post('/api/agent', (req, res) => {
+  const { query } = req.body;
   
   if (!query) {
-    return res.status(400).json({ message: 'Query is required' });
+    return res.status(400).json({ error: 'Query is required' });
   }
 
-  // Determine agent path - use provided path or try to find it
-  let finalAgentPath = agentPath;
+  // Escape quotes in the query to prevent command injection
+  const sanitizedQuery = query.replace(/"/g, '\\"');
   
-  if (!finalAgentPath || !fs.existsSync(finalAgentPath)) {
-    // Default path - combine the root path with the default filename
-    const defaultPath = path.join(AGENT_ROOT_PATH, DEFAULT_AGENT_FILENAME);
-    
-    if (fs.existsSync(defaultPath)) {
-      finalAgentPath = defaultPath;
-    } else {
-      // If default agent is not found, try to find any Python file in the directory
-      console.log(`Looking for Python files in ${AGENT_ROOT_PATH}`);
-      try {
-        const files = fs.readdirSync(AGENT_ROOT_PATH);
-        const pythonFiles = files.filter(file => file.endsWith('.py'));
-        
-        if (pythonFiles.length > 0) {
-          finalAgentPath = path.join(AGENT_ROOT_PATH, pythonFiles[0]);
-          console.log(`Found Python file: ${pythonFiles[0]}`);
-        } else {
-          console.error('No Python files found in the specified directory.');
-          return res.status(404).json({ 
-            message: 'No Python agent files found in the specified directory.' 
-          });
-        }
-      } catch (err) {
-        console.error(`Error reading directory: ${err.message}`);
-        return res.status(500).json({ 
-          message: `Error locating agent files: ${err.message}` 
-        });
-      }
-    }
-  }
-
-  console.log(`Executing agent with query: "${query}"`);
-  console.log(`Agent path: ${finalAgentPath}`);
-
   // Execute the Python script with the query
-  const command = `python "${finalAgentPath}" "${query}"`;
+  const command = `python agent_openrouter.py "${sanitizedQuery}"`;
   
-  exec(command, (error, stdout, stderr) => {
+  console.log(`Executing: ${command}`);
+  
+  exec(command, { 
+    cwd: '/Users/buzzdog/Library/CloudStorage/OneDrive-Personal/Documents/Code/PJT/chat2sql-backend' 
+  }, (error, stdout, stderr) => {
     if (error) {
-      console.error(`Error executing Python script: ${error}`);
-      return res.status(500).json({ message: `Error: ${error.message}` });
+      console.error(`Execution error: ${error}`);
+      return res.status(500).json({ error: 'Failed to execute agent', details: stderr });
     }
     
-    if (stderr) {
-      console.error(`Python script stderr: ${stderr}`);
-      // Some scripts may output to stderr but still work correctly
-      console.log(`Python script stdout: ${stdout}`);
-      // If stdout exists, we'll still return it along with the stderr
-      if (stdout) {
-        return res.json({ result: stdout, warning: stderr });
-      }
-      return res.status(500).json({ message: `Error: ${stderr}` });
-    }
-    
-    console.log(`Python script result: ${stdout.substring(0, 100)}...`);
-    // Return the stdout as the result
-    return res.json({ result: stdout });
+    console.log(`Agent response: ${stdout}`);
+    return res.status(200).json({ response: stdout });
   });
 });
 
-// Handle options preflight requests for CORS
-app.options('*', cors());
+// Helper function to ensure SQL query is properly formatted for execution
+function cleanSqlQuery(sqlQuery) {
+  if (!sqlQuery) return '';
+  
+  // Trim leading/trailing whitespace
+  let cleanQuery = sqlQuery.trim();
+  
+  // Remove any HTML entities or formatting artifacts that might be present
+  cleanQuery = cleanQuery.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  
+  // Ensure SELECT keyword is uppercase (helps with detection)
+  if (cleanQuery.toLowerCase().startsWith('select')) {
+    const selectIndex = cleanQuery.toLowerCase().indexOf('select');
+    cleanQuery = 'SELECT' + cleanQuery.substring(selectIndex + 6);
+  }
+  
+  console.log('SQL query cleaned for execution');
+  return cleanQuery;
+}
 
-const serverInfo = `
-=======================================================
-🤖 AI Agent Server
-=======================================================
-Server is running at: http://localhost:${port}
-Health check: http://localhost:${port}/health
+// API endpoint to execute a specific query
+app.post('/api/execute-query', (req, res) => {
+  // Get the raw query from request body WITHOUT ANY PROCESSING
+  let { query } = req.body;
+  
+  if (!query) {
+    return res.status(400).json({ error: 'Query is required' });
+  }
 
-To use this server:
-1. Keep this terminal window open
-2. The chat UI will automatically connect to this server
-
-Python agent directory: ${AGENT_ROOT_PATH}
-Default agent file: ${DEFAULT_AGENT_FILENAME}
-SQL query file: ${SQL_QUERY_FILE}
-Query executor script: ${QUERY_EXECUTOR_SCRIPT}
-Query results file: ${QUERY_RESULTS_FILE}
-
-To start the server, run: node agent-server.js
-=======================================================
-`;
-
-app.listen(port, () => {
-  console.log(serverInfo);
+  console.log('---------- RAW QUERY EXECUTION ----------');
+  console.log('Original query as received from client:');
+  console.log(query);
+  
+  // IMPORTANT: Write exactly what we received - no cleaning, no processing
+  // Use the SQL_QUERY_FILE environment variable instead of hardcoding the filename
+  const sqlQueryFile = process.env.SQL_QUERY_FILE || 'sql_query.txt';
+  const tempFilePath = path.join(__dirname, sqlQueryFile);
+  
+  try {
+    // Delete the file if it exists first
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
+    
+    // Write the EXACT query to file with no transformations
+    fs.writeFileSync(tempFilePath, query);
+    
+    // Verify file was written correctly
+    const writtenContent = fs.readFileSync(tempFilePath, 'utf8');
+    
+    // Log the SQL for debugging
+    console.log(`SQL written to ${tempFilePath} (${writtenContent.length} chars)`);
+    
+    // Check for exact match
+    if (writtenContent !== query) {
+      console.error('CRITICAL ERROR: File content does not match the original query');
+      console.error(`Original length: ${query.length}, file length: ${writtenContent.length}`);
+      
+      // Write to a diagnostic file to help debug
+      fs.writeFileSync('sql_query_original.txt', query);
+      fs.writeFileSync('sql_query_file.txt', writtenContent);
+      
+      console.error('Diagnostic files written for comparison');
+    }
+  } catch (writeError) {
+    console.error(`Error writing SQL query to file: ${writeError}`);
+    return res.status(500).json({ error: 'Failed to save query to file', details: writeError.message });
+  }
+  
+  // Execute the Python script with the query
+  const command = `python run_specific_query.py`;
+  
+  console.log(`Executing query with python script...`);
+  
+  exec(command, { 
+    cwd: '/Users/buzzdog/Library/CloudStorage/OneDrive-Personal/Documents/Code/PJT/chat2sql-backend' 
+  }, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Execution error: ${error}`);
+      return res.status(500).json({ error: 'Failed to execute query', details: stderr });
+    }
+    
+    // Try to read the CSV file
+    try {
+      const csvPath = path.join('/Users/buzzdog/Library/CloudStorage/OneDrive-Personal/Documents/Code/PJT/chat2sql-backend', 'deal_extract_docs_results.csv');
+      const csvContent = fs.readFileSync(csvPath, 'utf8');
+      
+      // Parse CSV data
+      const rows = csvContent.split('\n');
+      const headers = rows[0].split(',');
+      const data = rows.slice(1)
+        .filter(row => row.trim() !== '')
+        .map(row => row.split(','));
+      
+      console.log(`Query executed and CSV data retrieved.`);
+      return res.status(200).json({ 
+        message: stdout,
+        result: {
+          columns: headers,
+          data: data
+        }
+      });
+    } catch (csvError) {
+      console.error(`Error reading CSV: ${csvError}`);
+      return res.status(200).json({ 
+        message: stdout,
+        result: null,
+        error: 'Failed to read result data'
+      });
+    }
+  });
 });
+
+// API endpoint to directly write SQL to file
+app.post('/api/write-sql-file', (req, res) => {
+  const { query } = req.body;
+  
+  if (!query) {
+    return res.status(400).json({ error: 'Query is required', success: false });
+  }
+
+  console.log('\n-------- DIRECT SQL FILE WRITE --------');
+  console.log('Writing SQL directly to file:', query);
+  
+  // Create the file path - absolute path to ensure reliability
+  const sqlFilePath = path.join('/Users/buzzdog/Library/CloudStorage/OneDrive-Personal/Documents/Code/PJT/chat2sql-backend', 'sql_query.txt');
+  
+  try {
+    // Delete the file if it exists
+    if (fs.existsSync(sqlFilePath)) {
+      fs.unlinkSync(sqlFilePath);
+    }
+    
+    // Write the query directly to the file
+    fs.writeFileSync(sqlFilePath, query, { encoding: 'utf8' });
+    
+    // Verify content was written correctly
+    const writtenContent = fs.readFileSync(sqlFilePath, 'utf8');
+    console.log('SQL query file created successfully with query:\n', writtenContent);
+    
+    return res.json({ success: true, message: 'SQL query written to file' });
+  } catch (error) {
+    console.error('Error writing SQL file:', error);
+    return res.status(500).json({ error: 'Failed to write SQL file', success: false });
+  }
+});
+
+// API endpoint to execute a query from the file
+app.post('/api/execute-query-from-file', (req, res) => {
+  console.log('\n-------- EXECUTING QUERY FROM FILE --------');
+  
+  // Path to the query file
+  const sqlFilePath = path.join('/Users/buzzdog/Library/CloudStorage/OneDrive-Personal/Documents/Code/PJT/chat2sql-backend', 'sql_query.txt');
+  
+  // Check if the file exists
+  if (!fs.existsSync(sqlFilePath)) {
+    return res.status(400).json({ error: 'SQL query file not found' });
+  }
+  
+  // Read the file content for logging
+  try {
+    const fileContent = fs.readFileSync(sqlFilePath, 'utf8');
+    console.log('Executing query from file:\n', fileContent);
+  } catch (error) {
+    console.error('Error reading SQL file:', error);
+  }
+  
+  // Execute the Python script
+  const command = `python run_specific_query.py`;
+  
+  console.log('Executing Python script with SQL file...');
+  
+  exec(command, {
+    cwd: '/Users/buzzdog/Library/CloudStorage/OneDrive-Personal/Documents/Code/PJT/chat2sql-backend'
+  }, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Execution error: ${error}`);
+      return res.status(500).json({ error: 'Failed to execute query', details: stderr });
+    }
+    
+    // Try to read the CSV file
+    try {
+      const csvPath = path.join('/Users/buzzdog/Library/CloudStorage/OneDrive-Personal/Documents/Code/PJT/chat2sql-backend', 'deal_extract_docs_results.csv');
+      const csvContent = fs.readFileSync(csvPath, 'utf8');
+      
+      // Parse CSV data
+      const rows = csvContent.split('\n');
+      const headers = rows[0].split(',');
+      const data = rows.slice(1)
+        .filter(row => row.trim() !== '')
+        .map(row => row.split(','));
+      
+      console.log(`Query executed and CSV data retrieved.`);
+      return res.status(200).json({
+        message: stdout,
+        result: {
+          columns: headers,
+          data: data
+        }
+      });
+    } catch (csvError) {
+      console.error(`Error reading CSV: ${csvError}`);
+      return res.status(200).json({
+        message: stdout,
+        result: null,
+        error: 'Failed to read result data'
+      });
+    }
+  });
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Agent server listening at http://localhost:${port}`);
+});
+
