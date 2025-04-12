@@ -1,11 +1,21 @@
-Deal_ID,Target,Announcement_Date,Former_CEO,CEO_Replacement_Date
-4275361020,Vector Group Ltd,2024-08-21,Howard Lorber,2024-10-07
-4228428020,Heartland Financial USA Inc,2024-04-28,Bruce Lee,2025-01-31
-4216240020,HashiCorp Inc,2024-04-24,David Mcjannet,2025-02-27
-4221144020,Alpine Immune Sciences Inc,2024-04-10,Mitchell Gold,2024-05-20
-4205879020,Equitrans Midstream Corp,2024-03-11,Diana Charletta,2024-07-22
-4200961020,Sterling Check Corp,2024-02-29,Joshua Peirez,2024-10-31
-4194628020,Vizio Holding Corp,2024-02-20,William Wang,2024-12-03
-4196458020,Discover Financial Services,2024-02-19,John Owen,2024-03-06
-4193997020,Cymabay Therapeutics Inc,2024-02-12,Sujal Shah,2024-03-22
-4193549020,Masonite International Corp,2024-02-09,Howard Heckes,2024-05-15
+DealID,Target_Name,Acquiror_Name,Date_Announced,Rank_Value,Total Target Fees,Total Acquiror Fees,Selection_Process
+2183939020,GLG Partners Inc,Man Group PLC,2010-05-17,1544487000.00,27500000.0,0.0,Bake-off
+2185003020,Pactiv Corp,Reynolds Group Holdings Ltd,2010-08-17,5846624000.00,6000000.0,0.0,Bake-off
+2191624020,Buckeye GP Holdings LP,Buckeye Partners LP,2010-06-11,2743846000.00,11000000.0,9000000.0,Bake-off
+2202209020,NBTY Inc,The Carlyle Group LLC,2010-07-15,3779427000.00,43500000.0,0.0,Bake-off
+2230996020,Massey Energy Co,Alpha Natural Resources Inc,2011-01-29,8156923000.00,32000000.0,59000000.0,Bake-off
+2242078020,J Crew Group Inc,J Crew Group Inc SPV,2010-11-23,2674548000.00,32848000.0,0.0,Bake-off
+2272890020,Hughes Communications Inc,Broadband Acquisition Corp,2011-02-14,1901699000.00,32000000.0,0.0,Bake-off
+2283109020,Duncan Energy Partners LP,DEP Holdings LLC,2011-02-23,1044929000.00,10000000.0,0.0,Bake-off
+2304069020,SAVVIS Inc,CenturyLink Inc,2011-04-27,3026901000.00,39400000.0,0.0,Bake-off
+2325147020,Blackboard Inc,Bulldog Acquisition Sub Inc,2011-07-01,1751484000.00,30000000.0,0.0,Bake-off
+2392580020,Knology Inc,WIDEOPEN WEST LLC,2012-04-18,1415564000.00,56000000.0,0.0,Bake-off
+2407908020,Ardea Biosciences Inc,AstraZeneca PLC,2012-04-23,1032729000.00,26000000.0,0.0,Bake-off
+2422194020,Ancestry.com Inc,Global Generations International Inc,2012-10-22,1473688000.00,37000000.0,0.0,Bake-off
+2434802020,Deltek Inc,Thoma Bravo LP,2012-08-27,1028498000.00,26100000.0,0.0,Bake-off
+2435007020,PPG Industries Inc-Commodity Chemicals Business,Georgia Gulf Corp,2012-07-19,2082000000.00,0.0,23000000.0,Bake-off
+2463547020,JDA Software Group Inc,RedPrairie Corp,2012-11-01,1800470000.00,36600000.0,0.0,Bake-off
+2467110020,Titanium Metals Corp,Precision Castparts Corp,2012-11-09,2610826000.00,37600000.0,0.0,Bake-off
+2474194020,McMoRan Exploration Co,Freeport-McMoRan Copper & Gold Inc,2012-12-05,3177304000.00,44520000.0,32000000.0,Bake-off
+2529039020,Dole Food Co Inc,Investor Group,2013-06-11,1018442000.00,10000000.0,12000000.0,Bake-off
+2564939020,Sterling Financial Corp,Umpqua Holdings Corp,2013-09-11,1972663000.00,11832000.0,22600000.0,Bake-off

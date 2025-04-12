@@ -5,8 +5,13 @@
 Script to run a specific SQL query and display the results
 """
 
+import os
 import pandas as pd
 from sql_connector import read_sql_query_with_pandas
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 def clean_dataframe(df):
     """
@@ -64,11 +69,14 @@ def clean_dataframe(df):
     return df
 
 def main():
-    # Read the SQL query from the sql_query.txt file
+    # Get the SQL query file path from environment variables
+    sql_query_file = os.getenv('SQL_QUERY_FILE', 'sql_query.txt')  # Default to sql_query.txt if env var not set
+    
+    # Read the SQL query from the file
     try:
-        with open('sql_query.txt', 'r') as file:
+        with open(sql_query_file, 'r') as file:
             query = file.read().strip()
-        print("Successfully read SQL query from sql_query.txt")
+        print(f"Successfully read SQL query from {sql_query_file}")
     except Exception as e:
         print(f"Error reading SQL query file: {e}")
         return
@@ -88,8 +96,8 @@ def main():
         print("\nQuery results:")
         print(df)
         
-        # Save to CSV
-        csv_filename = "deal_extract_docs_results.csv"
+        # Save to CSV - Use environment variable for results file path
+        csv_filename = os.getenv('RESULTS_CSV_FILE', 'deal_extract_docs_results.csv')
         df.to_csv(csv_filename, index=False)
         print(f"\nResults saved to {csv_filename}")
     else:

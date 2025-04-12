@@ -1,19 +1,28 @@
 import pymysql
 import pandas as pd
+import os
 from sqlalchemy import create_engine
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 def connect_to_mysql():
     """
     Establish a connection to the Azure MySQL database
     """
-    # Database connection parameters
-    host = "pjttest.mysql.database.azure.com"
-    user = "pjtadmin"
-    password = "Port@ge123"
-    port = 3306  # Default MySQL port
+    # Database connection parameters from environment variables
+    host = os.getenv("DB_HOST")
+    user = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+    port = int(os.getenv("DB_PORT", 3306))  # Default MySQL port if not specified
     
     # Create connection with SSL enabled
     try:
+        # Get SSL configuration from environment variables
+        use_ssl = os.getenv("DB_SSL", "true").lower() == "true"
+        verify_ssl = os.getenv("DB_SSL_VERIFY", "false").lower() == "true"
+        
         connection = pymysql.connect(
             host=host,
             user=user,
@@ -21,8 +30,8 @@ def connect_to_mysql():
             port=port,
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor,
-            ssl={"ssl": True},  # Enable SSL for secure connection
-            ssl_verify_cert=False  # Don't verify the server's certificate
+            ssl={"ssl": use_ssl} if use_ssl else None,  # Enable SSL based on env var
+            ssl_verify_cert=verify_ssl  # Verify server's certificate based on env var
         )
         print("Connection to MySQL database successful!")
         return connection
@@ -74,11 +83,11 @@ def get_sqlalchemy_engine(database=None):
     Returns:
         sqlalchemy.engine.Engine: SQLAlchemy engine
     """
-    # Database connection parameters
-    host = "pjttest.mysql.database.azure.com"
-    user = "pjtadmin"
-    password = "Port@ge123"
-    port = 3306
+    # Database connection parameters from environment variables
+    host = os.getenv("DB_HOST")
+    user = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+    port = int(os.getenv("DB_PORT", 3306))
     
     # Create connection string with URL encoding for special characters in password
     from urllib.parse import quote_plus
@@ -88,11 +97,15 @@ def get_sqlalchemy_engine(database=None):
         conn_str += f"/{database}"
     
     try:
-        # Add SSL configuration for secure connection
-        connect_args = {
-            "ssl": {"ssl": True},
-            "ssl_verify_cert": False
-        }
+        # Get SSL configuration from environment variables
+        use_ssl = os.getenv("DB_SSL", "true").lower() == "true"
+        verify_ssl = os.getenv("DB_SSL_VERIFY", "false").lower() == "true"
+        
+        # Add SSL configuration for secure connection based on environment variables
+        connect_args = {}
+        if use_ssl:
+            connect_args["ssl"] = {"ssl": True}
+            connect_args["ssl_verify_cert"] = verify_ssl
         engine = create_engine(conn_str, connect_args=connect_args)
         return engine
     except Exception as e:
