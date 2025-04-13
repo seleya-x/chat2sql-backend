@@ -3,16 +3,12 @@ const { exec } = require('child_process');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const adminRoutes = require('./admin-handlers');
 const app = express();
 const port = 3001;
 
 // Enable CORS for all routes
 app.use(cors());
 app.use(express.json());
-
-// Use admin routes
-app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
