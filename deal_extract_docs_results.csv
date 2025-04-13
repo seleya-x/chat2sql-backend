@@ -1,21 +1,15 @@
-DealID,Target_Name,Acquiror_Name,Date_Announced,Rank_Value,Total Target Fees,Total Acquiror Fees,Selection_Process
-2183939020,GLG Partners Inc,Man Group PLC,2010-05-17,1544487000.00,27500000.0,0.0,Bake-off
-2185003020,Pactiv Corp,Reynolds Group Holdings Ltd,2010-08-17,5846624000.00,6000000.0,0.0,Bake-off
-2191624020,Buckeye GP Holdings LP,Buckeye Partners LP,2010-06-11,2743846000.00,11000000.0,9000000.0,Bake-off
-2202209020,NBTY Inc,The Carlyle Group LLC,2010-07-15,3779427000.00,43500000.0,0.0,Bake-off
-2230996020,Massey Energy Co,Alpha Natural Resources Inc,2011-01-29,8156923000.00,32000000.0,59000000.0,Bake-off
-2242078020,J Crew Group Inc,J Crew Group Inc SPV,2010-11-23,2674548000.00,32848000.0,0.0,Bake-off
-2272890020,Hughes Communications Inc,Broadband Acquisition Corp,2011-02-14,1901699000.00,32000000.0,0.0,Bake-off
-2283109020,Duncan Energy Partners LP,DEP Holdings LLC,2011-02-23,1044929000.00,10000000.0,0.0,Bake-off
-2304069020,SAVVIS Inc,CenturyLink Inc,2011-04-27,3026901000.00,39400000.0,0.0,Bake-off
-2325147020,Blackboard Inc,Bulldog Acquisition Sub Inc,2011-07-01,1751484000.00,30000000.0,0.0,Bake-off
-2392580020,Knology Inc,WIDEOPEN WEST LLC,2012-04-18,1415564000.00,56000000.0,0.0,Bake-off
-2407908020,Ardea Biosciences Inc,AstraZeneca PLC,2012-04-23,1032729000.00,26000000.0,0.0,Bake-off
-2422194020,Ancestry.com Inc,Global Generations International Inc,2012-10-22,1473688000.00,37000000.0,0.0,Bake-off
-2434802020,Deltek Inc,Thoma Bravo LP,2012-08-27,1028498000.00,26100000.0,0.0,Bake-off
-2435007020,PPG Industries Inc-Commodity Chemicals Business,Georgia Gulf Corp,2012-07-19,2082000000.00,0.0,23000000.0,Bake-off
-2463547020,JDA Software Group Inc,RedPrairie Corp,2012-11-01,1800470000.00,36600000.0,0.0,Bake-off
-2467110020,Titanium Metals Corp,Precision Castparts Corp,2012-11-09,2610826000.00,37600000.0,0.0,Bake-off
-2474194020,McMoRan Exploration Co,Freeport-McMoRan Copper & Gold Inc,2012-12-05,3177304000.00,44520000.0,32000000.0,Bake-off
-2529039020,Dole Food Co Inc,Investor Group,2013-06-11,1018442000.00,10000000.0,12000000.0,Bake-off
-2564939020,Sterling Financial Corp,Umpqua Holdings Corp,2013-09-11,1972663000.00,11832000.0,22600000.0,Bake-off
+DealID,TargetName,AcquirorName,DateAnnounced,RankValue,Total Target Fees,Total Acquiror Fees,AdvisorSelectionProcess
+2474194020,McMoRan Exploration Co,Freeport-McMoRan Copper & Gold Inc,2012-12-05,3177304000.00,22260000.0,16000000.0,Bake-off
+2646130020,Williams Partners LP,Access Midstream Partners LP,2014-06-15,19967778000.00,6000000.0,5000000.0,Bake-off
+2814327020,Northern Tier Energy LP,Western Refining Inc,2015-10-26,1736727000.00,4500000.0,20000000.0,Bake-off
+3111445020,Pinnacle Foods Inc,Conagra Brands Inc,2018-06-27,10831111000.00,96600000.0,0.0,Bake-off
+3198363020,Archrock Partners LP,Archrock Inc,2018-01-02,1959075000.00,4000000.0,10000000.0,Bake-off
+3269691020,Esterline Technologies Corp,TransDigm Group Inc,2018-10-10,3910124000.00,88500000.0,0.0,Bake-off
+3472883020,Pattern Energy Group Inc,Pacific US Inc,2019-11-04,5093597000.00,25000000.0,0.0,Bake-off
+3741880020,Landmark Infrastructure Partners LP,Landmark Dividend LLC,2021-05-17,1006588000.00,5000000.0,0.0,Bake-off
+3787201020,Inovalon Holdings Inc,Inovalon Holdings Inc SPV,2021-08-19,7814067000.00,104000000.0,0.0,Bake-off
+3877772020,Houghton Mifflin Harcourt Co,Harbor Holding Corp,2022-02-22,2551230000.00,64000000.0,0.0,Bake-off
+3933478020,Continental Resources Inc,Omega Acquisition Inc,2022-06-14,4701024000.00,19340000.0,23700000.0,Bake-off
+4024005020,Duck Creek Technologies Inc,Disco Parent LLC,2023-01-09,2313086000.00,84600000.0,0.0,Bake-off
+4049307020,Diversey Holdings Ltd,Olympus Water Holdings IV LP,2023-03-08,4371020000.00,17000000.0,0.0,Bake-off
+4104203020,DISH Network Corp,EchoStar Corp,2023-08-08,21875336000.00,20000000.0,23000000.0,Bake-off
