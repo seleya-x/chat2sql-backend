@@ -12,7 +12,7 @@ load_dotenv()
 # Set up OpenRouter environment from environment variables
 api_key = os.getenv("OPENROUTER_API_KEY")
 api_base = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
-model = os.getenv("OPENROUTER_MODEL", "o3-mini-high")  # OpenRouter model
+model = os.getenv("OPENROUTER_MODEL", "o4-mini-high")  # OpenRouter model
 
 # Check if API key is set
 if not api_key:
