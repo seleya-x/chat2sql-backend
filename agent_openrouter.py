@@ -12,7 +12,7 @@ load_dotenv()
 # Set up OpenRouter environment from environment variables
 api_key = os.getenv("OPENROUTER_API_KEY")
 api_base = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
-model = os.getenv("OPENROUTER_MODEL", "o4-mini-high")  # OpenRouter model
+model = os.getenv("OPENROUTER_MODEL", "openai/o3-mini-high")  # OpenRouter model
 
 # Check if API key is set
 if not api_key:
@@ -112,12 +112,12 @@ def generate_sql_query(human_query, schema_text):
     Limit your query to at most 20 results using the LIMIT clause.
     Always show the following columns:
     - DealID
-    - deals_summary.target_name
-    - deals_summary.acquiror_name
-    - deals_summary.date_announced
-    - deals_summary.rank_value
-    - Total Target Fees
-    - Total Acquiror Fees
+    - deals_summary.target_name as target
+    - deals_summary.acquiror_name as acquiror
+    - deals_summary.date_announced as data_announced
+    - deals_summary.rank_value as rank_value
+    - Total Target Fees as 'Total Target Fees'
+    - Total Acquiror Fees as 'Total Acquiror Fees'
     - Other relevant columns relevant to the query
     Never query for all the columns from a specific table, only ask for a the few relevant columns given the question.
     DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
@@ -153,9 +153,18 @@ def generate_sql_query(human_query, schema_text):
     13. Include target_name and date information when relevant to provide context
 
     ** Specific Guidelines for Common Queries: **
-    1. For transaction size filters:
-        - The rank_value field in deals_summary is in millions of dollars
-        - For ranges like "$1bn-$5bn", use rank_value BETWEEN 1000 AND 5000
+    1. For queries involving transaction or deal size:
+        - Use `rank_value` field in `deals_summary` (alias **ds.rank_value**) — values are stored in **raw U.S. dollars** (not millions/billions).
+        - Interpret scale words & abbreviations (case insensitive) as follows  
+          • “billion”, “bn”, “b”, “B”   ⇒  x1000000000  
+          • “million”, “m”, “mm”, “M”  ⇒  x1000000
+        - Allow decimals (e.g., “7.5 bn” → 7500000000).
+        - **NEVER** default to '0'; if the amount cannot be parsed, reply “I don't know”.
+        - **ALWAYS** reference the field with its table alias, e.g. `WHERE ds.rank_value > 10000000000`.
+        - Example conversions for reference (your SQL must follow these exactly):
+          • [query = “Deals greater than $10 billion” ; SQL → `WHERE ds.rank_value > 10000000000`]
+          • [query = “Transactions under $500 m”      ; SQL → `WHERE ds.rank_value < 500000000`]
+          • [query = “Deals between 1.5bn and 3bn”    ; SQL → `WHERE ds.rank_value BETWEEN 1500000000 AND 3000000000`]
 
     2. For queries involving company names:
         - Always look into deals_summary table first when looking for target names or acquiror names
@@ -213,7 +222,11 @@ def generate_sql_query(human_query, schema_text):
     - Use clear and consistent indentation for readability
     - When querying for strings, convert to lower case and use the LIKE '%string%' operator
 
-    Generate an MySQL query that answers the human query. Only provide the MySQL statement as your answer. If the question does not seem related to the database, just return "I don't know" as the answer"""
+    Generate an MySQL query that answers the human query. Only provide the MySQL statement as your answer. 
+    
+    If the question asks for information that is NOT in the database, such as specific descriptors about the deal, just return "This information is not in the database"
+
+    If the question does not seem related to the database, just return "I don't know" as the answer"""
 
     try:
         response = client.chat.completions.create(
@@ -283,6 +296,7 @@ def main():
         sys.exit(1)
 
     human_query = sys.argv[1]
+
     schema_text = load_schema()
     if not schema_text:
         print("Failed to load the database schema.")

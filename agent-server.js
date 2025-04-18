@@ -23,24 +23,96 @@ app.post('/api/agent', (req, res) => {
     return res.status(400).json({ error: 'Query is required' });
   }
 
-  // Escape quotes in the query to prevent command injection
-  const sanitizedQuery = query.replace(/"/g, '\\"');
+  // Instead of using shell command with string interpolation, which causes issues with $ signs,
+  // we'll use the exec function with an array of arguments to bypass shell interpretation
   
-  // Execute the Python script with the query
-  const command = `python agent_openrouter.py "${sanitizedQuery}"`;
+  // Execute the Python script with the query directly (no shell interpretation)
+  const pythonPath = 'python';
+  const scriptPath = 'agent_openrouter.py';
   
-  console.log(`Executing: ${command}`);
+  console.log(`Executing Python with query: ${query}`);
   
-  exec(command, { 
+  // Use spawn instead of exec to avoid shell interpretation issues
+  const { spawn } = require('child_process');
+  
+  // Create a process with arguments as separate array elements (no shell interpretation)
+  const pythonProcess = spawn(pythonPath, [
+    scriptPath,
+    query  // Pass the raw query directly - no shell interpretation
+  ], { 
     cwd: '/Users/buzzdog/Library/CloudStorage/OneDrive-Personal/Documents/Code/PJT/chat2sql-backend' 
-  }, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Execution error: ${error}`);
-      return res.status(500).json({ error: 'Failed to execute agent', details: stderr });
+  });
+  
+  let stdoutData = '';
+  let stderrData = '';
+  
+  // Collect stdout data
+  pythonProcess.stdout.on('data', (data) => {
+    stdoutData += data.toString();
+  });
+  
+  // Collect stderr data
+  pythonProcess.stderr.on('data', (data) => {
+    stderrData += data.toString();
+    console.error(`Python stderr: ${data}`);
+  });
+  
+  // Handle process completion
+  pythonProcess.on('close', (code) => {
+    if (code !== 0) {
+      console.error(`Python process exited with code ${code}`);
+      return res.status(500).json({ error: 'Failed to execute agent', details: stderrData });
     }
     
-    console.log(`Agent response: ${stdout}`);
-    return res.status(200).json({ response: stdout });
+    console.log(`Agent response: ${stdoutData}`);
+    return res.status(200).json({ response: stdoutData });
+  });
+});
+
+// Add a new endpoint that uses the same approach for the agent
+app.post('/api/agent-direct', (req, res) => {
+  const { query } = req.body;
+  
+  if (!query) {
+    return res.status(400).json({ error: 'Query is required' });
+  }
+  
+  console.log(`Executing Python with direct query: ${query}`);
+  
+  // Use spawn to avoid shell interpretation issues
+  const { spawn } = require('child_process');
+  
+  // Create a process with arguments as separate array elements
+  const pythonProcess = spawn('python', [
+    'agent_openrouter.py',
+    query  // Pass the raw query directly - no shell interpretation
+  ], { 
+    cwd: '/Users/buzzdog/Library/CloudStorage/OneDrive-Personal/Documents/Code/PJT/chat2sql-backend' 
+  });
+  
+  let stdoutData = '';
+  let stderrData = '';
+  
+  // Collect stdout data
+  pythonProcess.stdout.on('data', (data) => {
+    stdoutData += data.toString();
+  });
+  
+  // Collect stderr data
+  pythonProcess.stderr.on('data', (data) => {
+    stderrData += data.toString();
+    console.error(`Python stderr: ${data}`);
+  });
+  
+  // Handle process completion
+  pythonProcess.on('close', (code) => {
+    if (code !== 0) {
+      console.error(`Python process exited with code ${code}`);
+      return res.status(500).json({ error: 'Failed to execute agent', details: stderrData });
+    }
+    
+    console.log(`Agent response: ${stdoutData}`);
+    return res.status(200).json({ response: stdoutData });
   });
 });
 
@@ -67,10 +139,15 @@ function cleanSqlQuery(sqlQuery) {
 // API endpoint to execute a specific query
 app.post('/api/execute-query', (req, res) => {
   // Get the raw query from request body WITHOUT ANY PROCESSING
-  let { query } = req.body;
+  let { query, preventRedirect } = req.body;
   
   if (!query) {
     return res.status(400).json({ error: 'Query is required' });
+  }
+  
+  // Log if preventRedirect flag is set
+  if (preventRedirect) {
+    console.log('preventRedirect flag set - ensuring no navigation occurs');
   }
 
   console.log('---------- RAW QUERY EXECUTION ----------');
