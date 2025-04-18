@@ -1,15 +1,18 @@
 SELECT
     ds.deal_id AS DealID,
-    ds.target_name AS TargetName,
-    ds.acquiror_name AS AcquirorName,
-    ds.date_announced AS DateAnnounced,
-    ds.rank_value AS RankValue,
-    SUM(CASE WHEN LOWER(fvc.type) = 'target' THEN fvc.advisor_fee ELSE 0 END) AS `Total Target Fees`,
-    SUM(CASE WHEN LOWER(fvc.type) = 'acquiror' THEN fvc.advisor_fee ELSE 0 END) AS `Total Acquiror Fees`,
-    dh.selection_process AS AdvisorSelectionProcess
-FROM deals_summary ds
-JOIN deal_history_consolidated dh ON ds.deal_id = dh.deal_id LEFT
-JOIN fees_verification_consolidated fvc ON ds.deal_id = fvc.deal_id
-WHERE LOWER(dh.name) LIKE '%evercore%' AND LOWER(dh.selection_process) LIKE '%bake-off%'
-GROUP BY ds.deal_id, ds.target_name, ds.acquiror_name, ds.date_announced, ds.rank_value, dh.selection_process
+    ds.target_name AS target_name,
+    ds.acquiror_name AS acquiror,
+    ds.date_announced,
+    ds.rank_value,
+    SUM(IF(fvc.type = 'target', fvc.advisor_fee, 0)) AS "Total Target Fees",
+    SUM(IF(fvc.type = 'acquiror', fvc.advisor_fee, 0)) AS "Total Acquiror Fees"
+FROM deals_summary ds -- Only include deals that have a special committee involvement
+JOIN ( SELECT DISTINCT deal_id FROM deal_history_consolidated
+WHERE LOWER(engagement_role) LIKE '%special committee%' ) sc ON ds.deal_id = sc.deal_id --
+JOIN fee records for deals
+JOIN fees_verification_consolidated fvc ON ds.deal_id = fvc.deal_id --
+JOIN advisor table to get advisor category (Independent vs Bulge Bracket)
+JOIN advisor a ON fvc.name = a.advisor_name
+GROUP BY ds.deal_id, ds.target_name, ds.acquiror_name, ds.date_announced, ds.rank_value
+HAVING COUNT(DISTINCT a.advisor_id) = 2 AND COUNT(DISTINCT CASE WHEN a.advisor_category = 'Independent' THEN a.advisor_id END) = 1 AND COUNT(DISTINCT CASE WHEN a.advisor_category = 'Bulge Bracket' THEN a.advisor_id END) = 1
 LIMIT 20;
